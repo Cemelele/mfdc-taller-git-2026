@@ -24,6 +24,13 @@ curl -i localhost:8080
 
 - Para detenerla: `Ctrl+C`
 
+## Verificación del entorno
+
+```bash
+java -version   # JDK 21
+./mvnw -v       # Maven del wrapper
+```
+
 ## Tests
 
 ```bash
