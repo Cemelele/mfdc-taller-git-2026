@@ -16,10 +16,13 @@ API REST generada en [start.spring.io](https://start.spring.io) (Spring Boot 3.5
 ## Cómo probar
 
 - La API levanta en el puerto **8080**: `http://localhost:8080`
-- Ejemplo:
+- Endpoints:
 
 ```bash
-curl -i localhost:8080
+curl -i localhost:8080                                     # GET / (IndexController)
+curl -s localhost:8080/entidades                           # todas las entidades (JSON)
+curl -s "localhost:8080/entidad/zombie?vida=35&danio=10&atacante=Creeper"
+curl -i "localhost:8080/entidad/creeper?danio=-5"          # 400: la clase rechaza el daño negativo
 ```
 
 - Para detenerla: `Ctrl+C`
