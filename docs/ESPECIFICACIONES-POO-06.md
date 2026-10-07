@@ -5,6 +5,7 @@
 **Alumno:** MFDC — usuario de GitHub [Cemelele](https://github.com/Cemelele)
 **Trabajo individual**
 **Repositorio:** <https://github.com/Cemelele/mfdc-taller-git-2026>
+**Commit de la solución:** <https://github.com/Cemelele/mfdc-taller-git-2026/commit/b42ec31dd0133acf0f5fa062203fec8141e0aeea>
 
 ## 1. Objetivo
 

@@ -11,6 +11,11 @@ Lenguaje de Programación 3 (CYT646).
 - **Especificaciones aplicadas a este dominio:** [docs/ESPECIFICACIONES-POO-06.md](docs/ESPECIFICACIONES-POO-06.md)
 - **Bitácora de uso de IA:** [BITACORA.md](BITACORA.md)
 
+## Commit de la solución
+
+Código, tests y documentación de la entrega:
+<https://github.com/Cemelele/mfdc-taller-git-2026/commit/b42ec31dd0133acf0f5fa062203fec8141e0aeea>
+
 ## Licencia
 
 [Apache License 2.0](LICENSE): se puede usar, modificar y distribuir (incluso
