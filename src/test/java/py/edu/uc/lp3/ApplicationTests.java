@@ -1,10 +1,10 @@
-package py.edu.uc.lp3.mfdctallergit2026;
+package py.edu.uc.lp3;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MfdcTallerGit2026ApplicationTests {
+class ApplicationTests {
 
 	@Test
 	void contextLoads() {
