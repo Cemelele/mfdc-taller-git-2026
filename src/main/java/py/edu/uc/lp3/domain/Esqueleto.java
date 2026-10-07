@@ -1,4 +1,4 @@
-package minecraft;
+package py.edu.uc.lp3.domain;
 
 public class Esqueleto extends Hostil {
 
@@ -10,14 +10,13 @@ public class Esqueleto extends Hostil {
     }
 
     @Override
-    public void accionAtaque(Jugador objetivo) {
+    public String accionAtaque(Jugador objetivo) {
         if (flechas <= 0) {
-            System.out.println("Esqueleto se quedó sin flechas.");
-            return;
+            return "Esqueleto se quedo sin flechas, no puede atacar.";
         }
         flechas--;
-        System.out.println("Esqueleto dispara una flecha a " + objetivo.getNombre() + " (2 de daño).");
-        objetivo.recibirDanio(2);
+        return "Esqueleto dispara una flecha a " + objetivo.getNombre()
+                + ". " + objetivo.recibirDanio(2) + " (quedan " + flechas + " flechas)";
     }
 
     public int getFlechas() { return flechas; }

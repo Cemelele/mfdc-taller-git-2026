@@ -1,4 +1,4 @@
-package minecraft;
+package py.edu.uc.lp3.domain;
 
 public class Cerdo extends NoHostil {
 
@@ -10,14 +10,13 @@ public class Cerdo extends NoHostil {
     }
 
     @Override
-    public void interactuar(Jugador jugador) {
+    public String interactuar(Jugador jugador) {
         if (jugador.getInventario().contains("Silla de montar") && !ensillado) {
             ensillado = true;
-            System.out.println("El cerdo ahora esta ensillado y " + jugador.getNombre() + " puede montarlo.");
-        } else {
-            System.out.println("El cerdo gruñe y sigue caminando.");
-            reproducirSonido("oink");
+            return "El cerdo ahora esta ensillado y " + jugador.getNombre() + " puede montarlo.";
         }
+        reproducirSonido("oink");
+        return "El cerdo gruñe y sigue caminando.";
     }
 
     public boolean estaEnsillado() { return ensillado; }
