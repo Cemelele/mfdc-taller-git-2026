@@ -19,7 +19,8 @@ public class Jugador extends Entidad {
 
     /** Constructor sobrecargado: nombre propio del jugador. */
     public Jugador(String nombre) {
-        super(nombre, 20, new Hitbox(0.6, 1.8), "items del inventario");
+        super(nombre, 20, new Hitbox(0.6, 1.8), "items del inventario",
+                "texturas/jugador.png", "pasos", 0.28);
         this.inventario = new ArrayList<>();
         this.experiencia = 0;
     }

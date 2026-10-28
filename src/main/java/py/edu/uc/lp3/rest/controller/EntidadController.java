@@ -16,10 +16,12 @@ import org.springframework.web.server.ResponseStatusException;
 import py.edu.uc.lp3.domain.Aldeano;
 import py.edu.uc.lp3.domain.Cerdo;
 import py.edu.uc.lp3.domain.Creeper;
+import py.edu.uc.lp3.domain.Electrificable;
 import py.edu.uc.lp3.domain.Enderman;
 import py.edu.uc.lp3.domain.Entidad;
 import py.edu.uc.lp3.domain.Esqueleto;
 import py.edu.uc.lp3.domain.Jugador;
+import py.edu.uc.lp3.domain.UICapable;
 import py.edu.uc.lp3.domain.Zombie;
 
 /**
@@ -69,6 +71,52 @@ public class EntidadController {
                 .map(tipo -> crearEntidad(tipo, "", 0))
                 .map(entidad -> describir(entidad, objetivo, 0, "", 2.0))
                 .toList();
+    }
+
+    /**
+     * El mismo rayo alcanza a dos familias distintas: un Creeper (Hostil)
+     * y un Cerdo (NoHostil). El controller no pregunta la clase concreta:
+     * guarda la entidad en una variable del tipo de la interfaz
+     * {@link Electrificable} y le pide los mensajes a ella.
+     */
+    @GetMapping("/rayo/{tipo}")
+    public Map<String, Object> rayo(@PathVariable String tipo) {
+        Entidad entidad = crearEntidad(tipo, "", 0);
+        if (!(entidad instanceof Electrificable electrico)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    tipo + " no reacciona a un rayo");
+        }
+        return electrocutar(electrico);
+    }
+
+    /**
+     * Recibe el tipo de la interfaz, no la clase concreta: el texto de cada
+     * mensaje lo escribe la implementacion (Creeper reemplaza el default,
+     * el Cerdo lo hereda).
+     */
+    private Map<String, Object> electrocutar(Electrificable electrico) {
+        Map<String, Object> json = new LinkedHashMap<>();
+        json.put("entidad", electrico);
+        json.put("avisoRayo", electrico.avisoRayo());
+        json.put("recibirRayo", electrico.recibirRayo());
+        return json;
+    }
+
+    /**
+     * Datos de UI de cualquier entidad. Como todas las entidades son
+     * dibujables, el controller las trata por el tipo de la interfaz
+     * {@link UICapable} y no por su clase concreta.
+     */
+    @GetMapping("/ui/{tipo}")
+    public Map<String, Object> ui(@PathVariable String tipo) {
+        UICapable elemento = crearEntidad(tipo, "", 0);
+        Map<String, Object> json = new LinkedHashMap<>();
+        json.put("entidad", elemento);
+        json.put("imagen", elemento.getImagen());
+        json.put("posicion", elemento.getPosicion());
+        json.put("sonido", elemento.getSonido());
+        json.put("velocidad", elemento.getVelocidad());
+        return json;
     }
 
     /**

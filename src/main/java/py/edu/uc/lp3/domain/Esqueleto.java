@@ -5,7 +5,8 @@ public class Esqueleto extends Hostil {
     private int flechas;
 
     public Esqueleto() {
-        super("Esqueleto", 20, new Hitbox(0.6, 1.99), "Huesos y flechas", 16);
+        super("Esqueleto", 20, new Hitbox(0.6, 1.99), "Huesos y flechas",
+                "texturas/esqueleto.png", "huesos", 0.25, 16);
         this.flechas = 10;
     }
 

@@ -84,4 +84,42 @@ class EntidadControllerTest {
         mvc.perform(get("/entidad/dragon"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void elMismoEndpointPideElMensajePorLaInterfazYDevuelveJSON() throws Exception {
+        mvc.perform(get("/rayo/cerdo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.avisoRayo").value(
+                        containsString("El cielo se ilumina")))
+                .andExpect(jsonPath("$.recibirRayo").value(
+                        containsString("Piglin Zombificado")));
+
+        mvc.perform(get("/rayo/creeper"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.avisoRayo").value(containsString("sisea")))
+                .andExpect(jsonPath("$.recibirRayo").value(
+                        containsString("cargado por un rayo")));
+    }
+
+    @Test
+    void unTipoQueNoEsElectrificableResponde404() throws Exception {
+        mvc.perform(get("/rayo/zombie"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void elEndpointUiPideLosDatosPorLaInterfazYRespondeJSON() throws Exception {
+        mvc.perform(get("/ui/creeper"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.imagen").value("texturas/creeper.png"))
+                .andExpect(jsonPath("$.sonido").value("siseo"))
+                .andExpect(jsonPath("$.posicion").value("(0.0, 0.0, 0.0)"))
+                .andExpect(jsonPath("$.velocidad").value(0.25));
+    }
+
+    @Test
+    void elEndpointUiResponde404ParaTipoDesconocido() throws Exception {
+        mvc.perform(get("/ui/dragon"))
+                .andExpect(status().isNotFound());
+    }
 }

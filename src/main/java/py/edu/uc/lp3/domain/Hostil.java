@@ -13,8 +13,9 @@ public abstract class Hostil extends Entidad {
 
     private final double rangoAggro;
 
-    protected Hostil(String nombre, int vida, Hitbox hitboxFisico, String drop, double rangoAggro) {
-        super(nombre, vida, hitboxFisico, drop);
+    protected Hostil(String nombre, int vida, Hitbox hitboxFisico, String drop,
+                     String imagen, String sonido, double velocidad, double rangoAggro) {
+        super(nombre, vida, hitboxFisico, drop, imagen, sonido, velocidad);
         if (rangoAggro <= 0) {
             throw new IllegalArgumentException("El rango de aggro de " + nombre + " debe ser positivo");
         }

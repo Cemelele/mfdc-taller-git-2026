@@ -8,8 +8,9 @@ package py.edu.uc.lp3.domain;
  */
 public abstract class NoHostil extends Entidad {
 
-    protected NoHostil(String nombre, int vida, Hitbox hitboxFisico, String drop) {
-        super(nombre, vida, hitboxFisico, drop);
+    protected NoHostil(String nombre, int vida, Hitbox hitboxFisico, String drop,
+                       String imagen, String sonido, double velocidad) {
+        super(nombre, vida, hitboxFisico, drop, imagen, sonido, velocidad);
     }
 
     /**

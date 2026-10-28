@@ -16,7 +16,8 @@ public class Zombie extends Hostil {
 
     /** Constructor completo: el que resuelve el estado y llama a super. */
     public Zombie(String nombre, int vida) {
-        super(nombre, vida, new Hitbox(0.6, 1.95), "Carne podrida", 35);
+        super(nombre, vida, new Hitbox(0.6, 1.95), "Carne podrida",
+                "texturas/zombie.png", "gruñido", 0.23, 35);
         this.seQuemaAlSol = true;
     }
 

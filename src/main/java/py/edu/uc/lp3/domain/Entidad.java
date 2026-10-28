@@ -16,12 +16,15 @@ import java.util.Objects;
  * Los metodos no imprimen: devuelven una String con lo que ocurrio. Asi
  * el controller puede armar el JSON con la respuesta de cada entidad.
  */
-public abstract class Entidad {
+public abstract class Entidad implements UICapable {
 
     private int vida;
     private final String nombre;
     private final Hitbox hitboxFisico;
     private final String drop;
+    private final String imagen;
+    private final String sonido;
+    private final double velocidad;
     private final List<String> sonidos;
 
     // Posicion y orientacion, para que avanzar/rotar hagan algo real
@@ -31,21 +34,50 @@ public abstract class Entidad {
     private double rotacion; // en grados
     private boolean enElAire;
 
-    protected Entidad(String nombre, int vida, Hitbox hitboxFisico, String drop) {
+    protected Entidad(String nombre, int vida, Hitbox hitboxFisico, String drop,
+                      String imagen, String sonido, double velocidad) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("La entidad necesita un nombre");
         }
         if (vida <= 0) {
             throw new IllegalArgumentException("La vida inicial de " + nombre + " debe ser positiva");
         }
+        if (imagen == null || imagen.isBlank()) {
+            throw new IllegalArgumentException("La entidad necesita una imagen");
+        }
+        if (sonido == null || sonido.isBlank()) {
+            throw new IllegalArgumentException("La entidad necesita un sonido");
+        }
+        if (velocidad < 0) {
+            throw new IllegalArgumentException("La velocidad no puede ser negativa");
+        }
         this.nombre = nombre;
         this.vida = vida;
         this.hitboxFisico = Objects.requireNonNull(hitboxFisico, "la entidad necesita un hitbox");
         this.drop = Objects.requireNonNull(drop, "la entidad necesita un drop");
+        this.imagen = imagen;
+        this.sonido = sonido;
+        this.velocidad = velocidad;
         this.sonidos = new ArrayList<>();
         this.rotacion = 0.0;
         this.enElAire = false;
     }
+
+    // ---- UICapable: datos con los que la UI dibuja la entidad ----
+
+    @Override
+    public String getImagen() { return imagen; }
+
+    @Override
+    public String getPosicion() {
+        return "(" + dosDecimales(x) + ", " + dosDecimales(y) + ", " + dosDecimales(z) + ")";
+    }
+
+    @Override
+    public String getSonido() { return sonido; }
+
+    @Override
+    public double getVelocidad() { return velocidad; }
 
     // ---- Metodo abstracto: cada entidad se comporta distinto ----
 

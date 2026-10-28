@@ -1,12 +1,13 @@
 package py.edu.uc.lp3.domain;
 
-public class Creeper extends Hostil {
+public class Creeper extends Hostil implements Electrificable {
 
     private final double radioExplosion;
     private boolean cargado;
 
     public Creeper() {
-        super("Creeper", 20, new Hitbox(0.6, 1.7), "Polvora", 16);
+        super("Creeper", 20, new Hitbox(0.6, 1.7), "Polvora",
+                "texturas/creeper.png", "siseo", 0.25, 16);
         this.radioExplosion = 3.0;
         this.cargado = false;
     }
@@ -22,9 +23,16 @@ public class Creeper extends Hostil {
         return resultado + ". " + morir(); // la explosion lo destruye a el tambien
     }
 
+    @Override
     public String recibirRayo() {
         this.cargado = true;
-        return "Creeper cargado por un rayo: ahora explota con " + getNombre() + ".";
+        return "Creeper cargado por un rayo: ahora explota mas fuerte.";
+    }
+
+    /** Reemplaza el default de Electrificable con un aviso propio del Creeper. */
+    @Override
+    public String avisoRayo() {
+        return "El Creeper sisea mas fuerte mientras el rayo lo carga.";
     }
 
     public boolean isCargado() { return cargado; }

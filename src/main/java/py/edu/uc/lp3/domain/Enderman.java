@@ -5,7 +5,8 @@ public class Enderman extends Hostil {
     private String bloqueEnMano;
 
     public Enderman() {
-        super("Enderman", 40, new Hitbox(0.6, 2.9), "Perla de ender", 64);
+        super("Enderman", 40, new Hitbox(0.6, 2.9), "Perla de ender",
+                "texturas/enderman.png", "grito", 0.3, 64);
         this.bloqueEnMano = null;
     }
 

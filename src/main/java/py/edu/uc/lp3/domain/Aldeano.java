@@ -15,7 +15,8 @@ public class Aldeano extends NoHostil {
 
     /** Constructor sobrecargado: otra lista de argumentos (la profesion). */
     public Aldeano(String profesion) {
-        super("Aldeano", 20, new Hitbox(0.6, 1.95), "Nada");
+        super("Aldeano", 20, new Hitbox(0.6, 1.95), "Nada",
+                "texturas/aldeano.png", "hmm", 0.2);
         if (profesion == null || profesion.isBlank()) {
             throw new IllegalArgumentException("El aldeano necesita una profesion");
         }

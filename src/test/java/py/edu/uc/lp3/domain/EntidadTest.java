@@ -2,6 +2,7 @@ package py.edu.uc.lp3.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -111,5 +112,51 @@ class EntidadTest {
         String despuesDeMuir = cerdo.recibirDanio(5);
         assertTrue(despuesDeMuir.contains("ya murio"), despuesDeMuir);
         assertEquals(0, cerdo.getVida());
+    }
+
+    // ---- Interfaz: una capacidad compartida por familias distintas ----
+
+    @Test
+    void laMismaCapacidadSeImplementaDistintoEnFamiliasDistintas() {
+        Electrificable creeper = new Creeper();
+        Electrificable cerdo = new Cerdo();
+
+        assertTrue(creeper.recibirRayo().contains("cargado por un rayo"),
+                creeper.recibirRayo());
+        assertTrue(cerdo.recibirRayo().contains("Piglin Zombificado"),
+                cerdo.recibirRayo());
+    }
+
+    @Test
+    void unaClaseReemplazaElDefaultDeLaInterfazYOtraLoHereda() {
+        Electrificable creeper = new Creeper();
+        Electrificable cerdo = new Cerdo();
+
+        assertNotEquals(creeper.avisoRayo(), cerdo.avisoRayo());
+        assertTrue(creeper.avisoRayo().contains("sisea"), creeper.avisoRayo());
+        assertTrue(cerdo.avisoRayo().contains("El cielo se ilumina"), cerdo.avisoRayo());
+    }
+
+    // ---- Interfaz UICapable: todos los elementos dibujables ----
+
+    @Test
+    void todasLasEntidadesSonDibujablesYPidenSusDatosPorElTipoDeLaInterfaz() {
+        UICapable[] dibujables = { new Zombie(), new Creeper(), new Esqueleto(),
+                new Enderman(), new Aldeano(), new Cerdo(), new Jugador() };
+
+        for (UICapable elemento : dibujables) {
+            assertTrue(elemento.getImagen().endsWith(".png"), elemento.getImagen());
+            assertTrue(elemento.getPosicion().startsWith("("), elemento.getPosicion());
+            assertFalse(elemento.getSonido().isBlank(), "el sonido no puede venir vacio");
+            assertTrue(elemento.getVelocidad() > 0, "la velocidad debe ser positiva");
+        }
+    }
+
+    @Test
+    void laPosicionSeReflejaEnLosDatosDeUI() {
+        Entidad zombie = new Zombie();
+        zombie.avanzar(2);
+
+        assertTrue(zombie.getPosicion().contains("2.0"), zombie.getPosicion());
     }
 }
