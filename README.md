@@ -38,8 +38,11 @@ Queda en `http://localhost:8080`. Para detenerlo: `Ctrl+C`.
 | `GET /` | `IndexController` | Confirma que el servicio está vivo |
 | `GET /entidad/{tipo}` | `EntidadController` | Construye la entidad desde la URL y responde JSON |
 | `GET /entidades` | `EntidadController` | Lista todas las entidades, cada una con su comportamiento |
+| `GET /rayo/{tipo}` | `EntidadController` | Pide el mensaje por la interfaz `Electrificable` y responde JSON |
+| `GET /ui/{tipo}` | `EntidadController` | Datos de dibujo por la interfaz `UICapable`: imagen, posición, sonido y velocidad |
 
 Tipos válidos: `creeper`, `zombie`, `esqueleto`, `enderman`, `cerdo`, `aldeano`.
+En `/rayo/{tipo}` solo hay dos: `creeper` (Hostil) y `cerdo` (NoHostil).
 
 Parámetros de `GET /entidad/{tipo}`:
 
@@ -57,6 +60,9 @@ Parámetros de `GET /entidad/{tipo}`:
 curl "localhost:8080/entidad/zombie?vida=35&danio=10&atacante=Creeper"
 curl "localhost:8080/entidad/aldeano?profesion=Herrero"
 curl "localhost:8080/entidades"
+curl "localhost:8080/rayo/cerdo"    # misma capacidad, otra familia
+curl "localhost:8080/rayo/creeper"  # reemplaza el default con su propio aviso
+curl "localhost:8080/ui/creeper"    # datos de dibujo de cualquier entidad
 curl -i "localhost:8080/entidad/creeper?danio=-5"   # 400: la clase rechaza el daño negativo
 ```
 
@@ -66,7 +72,7 @@ Si un valor rompe una regla del dominio, la **clase** lo rechaza con una
 ## Cómo probar
 
 ```bash
-./mvnw test                 # 17 tests: dominio + HTTP (MockMvc)
+./mvnw test                 # 25 tests: dominio + HTTP (MockMvc)
 ./mvnw spring-boot:run      # levanta el servicio
 ```
 
@@ -81,6 +87,8 @@ src/main/java/py/edu/uc/lp3/
 │   ├── Entidad.java              clase base abstracta
 │   ├── Hostil.java               abstracta, agrega accionAtaque() abstracto
 │   ├── NoHostil.java             abstracta, agrega interactuar() abstracto
+│   ├── Electrificable.java       interface: capacidad de dos familias
+│   ├── UICapable.java            interface: todo elemento dibujable
 │   ├── Hitbox.java               inmutable, compuesto por Entidad
 │   ├── Jugador.java
 │   ├── Zombie.java  Creeper.java  Esqueleto.java  Enderman.java
@@ -100,6 +108,9 @@ classDiagram
         -String nombre
         -Hitbox hitboxFisico
         -String drop
+        -String imagen
+        -String sonido
+        -double velocidad
         -double x, y, z, rotacion
         +comportamiento(Jugador) String*
         +avanzar() String
@@ -112,6 +123,10 @@ classDiagram
         #desplazar(dx, dy, dz) String
         #morir() String
         +getVida() int
+        +getImagen() String
+        +getPosicion() String
+        +getSonido() String
+        +getVelocidad() double
     }
 
     class Hitbox {
@@ -134,6 +149,20 @@ classDiagram
         +comportamiento(Jugador) String
         +interactuar(Jugador) String*
         +huir() String
+    }
+
+    class Electrificable {
+        <<interface>>
+        +recibirRayo() String*
+        +avisoRayo() String
+    }
+
+    class UICapable {
+        <<interface>>
+        +getImagen() String*
+        +getPosicion() String*
+        +getSonido() String*
+        +getVelocidad() double*
     }
 
     class Jugador {
@@ -206,7 +235,12 @@ classDiagram
     NoHostil <|-- Cerdo
     Entidad *-- Hitbox : tiene un
     Entidad ..> Jugador : comportamiento(Jugador)
+    Electrificable <|.. Creeper : implementa
+    Electrificable <|.. Cerdo : implementa
+    UICapable <|.. Entidad : implementa (todas las entidades son dibujables)
     EntidadController ..> Entidad : construye y habla por mensajes
+    EntidadController ..> Electrificable : pide el mensaje por la interfaz
+    EntidadController ..> UICapable : pide los datos de dibujo
 ```
 
 `*` marca métodos abstractos. La línea `Entidad <|-- Hostil` y
@@ -271,11 +305,66 @@ compilaría; y si manda un valor ilegal por la URL (`?danio=-5`), la clase
 lanza `IllegalArgumentException` y el controller lo devuelve como HTTP 400,
 sin haber tocado el objeto.
 
+## Interfaz: una capacidad compartida entre familias
+
+`Electrificable` (en `domain`) declara la capacidad de **reaccionar a un
+rayo**. Es un rol que cruza la jerarquía: lo cumplen el `Creeper` (familia
+`Hostil`) y el `Cerdo` (familia `NoHostil`), que no comparten ningún ancestro
+más allá de `Entidad`.
+
+- El mensaje `recibirRayo()` devuelve texto y **cada clase lo escribe a su
+  modo**: el Creeper se carga y explota más fuerte; el Cerdo se convierte en
+  Piglin Zombificado.
+- La interfaz ofrece un `default` para `avisoRayo()`. El **Cerdo lo hereda**
+  y el **Creeper lo reemplaza** con su propio texto: ahí se ve la diferencia
+  entre usar un default y sobreescribirlo.
+
+`GET /rayo/{tipo}` recibe la entidad, la guarda en una variable del tipo de la
+interfaz (`Electrificable`) y le pide los mensajes a ella. El controller nunca
+pregunta la clase concreta ni conoce qué tipo de mob es:
+
+```bash
+curl "localhost:8080/rayo/creeper"
+# {"entidad":"Creeper(Creeper, vida=20)","avisoRayo":"El Creeper sisea mas fuerte...","recibirRayo":"Creeper cargado por un rayo: ..."}
+curl "localhost:8080/rayo/cerdo"
+# {"...","avisoRayo":"El cielo se ilumina: algo va a cambiar.","recibirRayo":"El cerdo se transforma en Piglin Zombificado..."}
+```
+
+## Interfaz UICapable: todos los elementos dibujables
+
+`UICapable` (en `domain`) define qué necesita saber el motor de render para
+dibujar un elemento: su **imagen**, su **posición**, su **sonido** y su
+**velocidad**. La implementa `Entidad`, así que **todas** las entidades
+(hostiles, pasivas y el jugador) son dibujables sin que cada clase repita el
+contrato.
+
+`Entidad` guarda `imagen`, `sonido` y `velocidad` como campos (validados en el
+constructor) y calcula `posicion` con sus coordenadas; cada subclase los
+alimenta desde su `super(...)` con sus propios valores:
+
+| Entidad | Imagen | Sonido | Velocidad |
+|---|---|---|---|
+| `Zombie` | `texturas/zombie.png` | gruñido | 0.23 |
+| `Creeper` | `texturas/creeper.png` | siseo | 0.25 |
+| `Esqueleto` | `texturas/esqueleto.png` | huesos | 0.25 |
+| `Enderman` | `texturas/enderman.png` | grito | 0.3 |
+| `Aldeano` | `texturas/aldeano.png` | hmm | 0.2 |
+| `Cerdo` | `texturas/cerdo.png` | oink | 0.2 |
+| `Jugador` | `texturas/jugador.png` | pasos | 0.28 |
+
+`GET /ui/{tipo}` construye la entidad y la trata por el **tipo de la interfaz**
+(`UICapable`), nunca por su clase concreta:
+
+```bash
+curl "localhost:8080/ui/creeper"
+# {"entidad":"Creeper(Creeper, vida=20)","imagen":"texturas/creeper.png","posicion":"(0.0, 0.0, 0.0)","sonido":"siseo","velocidad":0.25}
+```
+
 ## Tests
 
 ```text
 src/test/java/py/edu/uc/lp3/
 ├── ApplicationTests.java                  arranque del contexto
-├── domain/EntidadTest.java                sobreescritura, sobrecarga, constructores, invariantes
+├── domain/EntidadTest.java                sobreescritura, sobrecarga, constructores, invariantes e interfaz
 └── rest/controller/EntidadControllerTest.java   GET / y construcción desde la URL por HTTP
 ```
