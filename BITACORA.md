@@ -47,6 +47,46 @@ Los prompts fueron en español y, en frases propias, fueron estos:
 - No corrigió la calificación ni realizó la entrega en Classroom: el enlace al
   commit y el archivo de especificaciones los arma y entrega el alumno.
 
+## Segunda sesión: CRUD REST con persistencia (H2)
+
+| Dato                  | Valor                                      |
+|-----------------------|--------------------------------------------|
+| **Marca / agente**    | OpenCode (asistente de código en terminal) |
+| **Modelo LLM exacto** | (completar con el modelo usado ese día)    |
+| **Fecha**             | 28 de octubre de 2026                      |
+
+### Prompt usado
+
+El prompt lo dio el profesor en clase: crear un CRUD REST para la clase de
+entidades que respete la arquitectura de 3 capas, con una capa de negocio
+(service) con validaciones, persistiendo en H2 con Spring Data.
+
+### Qué generó el agente
+
+Creó la entidad JPA `EntidadPersistida`, el repository, el service y el
+`EntidadPersistidaController` bajo `/api/entidades`, además de las dependencias
+de Spring Data JPA y H2. El agente se quedó sin usos gratuitos antes de
+terminar el prompt, por lo que completé y revisé el resto a mano.
+
+### Qué corregí o decidí yo
+
+- **Persistencia:** la configuración generada usaba una base en memoria
+  (`jdbc:h2:mem`) con `ddl-auto=create-drop`, que borra los datos al apagar la
+  aplicación. La cambié a una base en archivo (`jdbc:h2:file:./data/entidades-db`)
+  con `ddl-auto=update` y agregué `data/` al `.gitignore`.
+- **Service:** las mismas validaciones (nombre, vida, velocidad) estaban
+  repetidas en varios lugares. Las unifiqué en un solo método y agregué una
+  regla de negocio: solo se aceptan los tipos válidos del dominio.
+- **Pruebas:** verifiqué que un tipo inválido devuelve 400, que un tipo válido
+  se guarda y que los datos y los ids se conservan después de reiniciar la
+  aplicación.
+
+### Problemas que resolví
+
+- El puerto 8080 estaba reservado por una regla de reenvío de VirtualBox.
+- Las comillas del JSON en PowerShell; usé `Invoke-RestMethod`.
+- La carpeta `data/` no estaba ignorada por Git.
+
 ## Uso declarado
 
 Se usó IA (OpenCode con el modelo `opencode/big-pickle`) para este trabajo.
