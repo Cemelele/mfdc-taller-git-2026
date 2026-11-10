@@ -92,3 +92,31 @@ terminar el prompt, por lo que completé y revisé el resto a mano.
 Se usó IA (OpenCode con el modelo `opencode/big-pickle`) para este trabajo.
 El código fue revisado y probado antes de commitearlo; la defensa en sala es
 responsabilidad del alumno.
+
+## Tercera sesión: Dominio JPA con herencia (Minecraft)
+
+| Dato | Valor |
+|---|---|
+| **Marca / agente** | OpenCode (asistente de código en terminal) |
+| **Modelo LLM exacto** | `opencode/big-pickle` |
+| **Fecha** | 9 de noviembre de 2026 |
+
+### Prompt usado
+
+Instrucción dada al agente: "Adapta el dominio de Minecraft a JPA persistiendo tres clases (Entidad como padre, Zombie y Creeper como hijas), asegurando las anotaciones correspondientes de JPA, la herencia con estrategia JOINED y la interfaz de dominio requerida."
+
+### Qué generó el agente
+
+- Configuró `Entidad` como la entidad raíz utilizando `@Entity`, `@Inheritance(JOINED)` y `@DiscriminatorColumn("tipo")`.
+- Ajustó a `Hostil` como `@MappedSuperclass`, dejando a `Zombie` y `Creeper` como las clases hijas persistidas.
+- Creó la interfaz `EntidadRepository` extendiendo de `JpaRepository<Entidad, Long>`.
+- Ejecutó la verificación mediante `./mvnw test`, logrando que pasaran **27 tests con 0 fallos** y confirmando que Hibernate genera correctamente las tablas en H2.
+
+### Qué corregí o decidí yo
+
+- Establecí y validé el flujo de trabajo híbrido: procesamiento de código y ejecución de pruebas en la máquina virtual Linux mediante SSH con OpenCode, reservando Windows y VS Code para la gestión de versiones y documentación.
+- Verifiqué el estado de Git asegurando que el commit del Paso 1 quedara correctamente registrado y sincronizado.
+
+### Problemas que resolví
+
+- Bloqueo de directorios (`model` y `repository`) al realizar el `git pull` en Windows debido a archivos en caché o en uso por el entorno de desarrollo, resuelto purgando los directorios obsoletos y reintentando la sincronización de manera limpia.
