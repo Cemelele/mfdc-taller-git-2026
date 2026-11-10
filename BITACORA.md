@@ -120,3 +120,39 @@ Instrucción dada al agente: "Adapta el dominio de Minecraft a JPA persistiendo 
 ### Problemas que resolví
 
 - Bloqueo de directorios (`model` y `repository`) al realizar el `git pull` en Windows debido a archivos en caché o en uso por el entorno de desarrollo, resuelto purgando los directorios obsoletos y reintentando la sincronización de manera limpia.
+
+## Tercera sesión: Implementación del CRUD REST (Entidad Hostil)
+
+| Dato | Valor |
+|---|---|
+| **Marca / agente** | OpenCode (asistente de código en terminal) |
+| **Modelo LLM exacto** | `opencode/DeepSeek v4.1 Flash 1017` |
+| **Fecha** | 11 de noviembre de 2026 |
+
+### Prompt usado
+
+Instrucción dada al agente: Implementa el CRUD REST completo para la familia Hostil (que incluye las entidades Zombie y Creeper, heredando de Hostil según la estrategia JOINED ya configurada en el Paso 1). 
+
+Por favor, asegúrate de incluir lo siguiente:
+1. HostilService: Capa de negocio que contenga las validaciones necesarias para los atributos de los enemigos hostiles (como nombre, vida, velocidad y daño de ataque).
+2. HostilController: Controlador REST que exponga los endpoints bajo la ruta "/api/hostiles" (GET para listar todos y por ID, POST para crear, PUT para actualizar y DELETE para eliminar).
+3. DTOs: Clases DTO de petición y respuesta para desacoplar el modelo de persistencia de la API REST.
+4. Repositorios necesarios si falta alguno para la jerarquía.
+
+Verifica que todo compile correctamente manteniendo la persistencia con H2.
+
+### Qué generó el agente
+
+- Creó y estructuró los DTOs (`HostilDTO`) y la lógica de negocio en el servicio (`HostilService`), incorporando validaciones positivas para los atributos y el manejo de excepciones mediante el manejador correspondiente.
+- Implementó los endpoints en el controlador bajo la ruta base `/api/hostiles` (abarcando operaciones `GET`, `POST`, `PUT`, `PATCH` y `DELETE`).
+- Ejecutó la verificación mediante `./mvnw test`, logrando que pasaran **27 tests con 0 fallos**, manteniendo la compilación correcta y la persistencia en la base de datos H2.
+
+### Qué corregí o decidí yo
+
+- Configuré el reenvío de puertos (Port Forwarding) en VirtualBox para permitir la comunicación entre el cliente Insomnia en Windows y el servidor Spring Boot ejecutándose en la máquina virtual Linux.
+- Diseñé y ejecuté la colección de pruebas en Insomnia (`insomnia_crud_hostil.json`), validando de forma interactiva los métodos del CRUD y exportando el resultado para la entrega.
+- Sincronicé los flujos de trabajo locales y remotos para asegurar que tanto el código fuente como los archivos de prueba quedaran debidamente integrados en el repositorio de Git.
+
+### Problemas que resolví
+
+- Conflicto de rechazo en el `git push` (`[rejected] main -> main (fetch first)`) provocado por discrepancias de commits entre el entorno local y remoto, resuelto ejecutando un `git pull --rebase origin main` seguro en la máquina virtual antes de integrar la colección de Insomnia.
