@@ -368,3 +368,11 @@ src/test/java/py/edu/uc/lp3/
 ├── domain/EntidadTest.java                sobreescritura, sobrecarga, constructores, invariantes e interfaz
 └── rest/controller/EntidadControllerTest.java   GET / y construcción desde la URL por HTTP
 ```
+# Taller de Git 2026 - API REST (Minecraft)
+
+**Enlace al commit de la solución:** [https://github.com/<usuario>/INICIALES-taller-git-2026/commit/{EL_HASH_DEL_COMMIT}](https://github.com/<usuario>/INICIALES-taller-git-2026/commit/{EL_HASH_DEL_COMMIT})
+
+## 🚀 Cómo arrancar el proyecto
+Para iniciar el servicio HTTP localmente con Spring Boot, abre una terminal en la raíz del proyecto y ejecuta:
+```bash
+./mvnw spring-boot:run
