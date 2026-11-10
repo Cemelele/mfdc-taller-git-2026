@@ -121,7 +121,7 @@ Instrucción dada al agente: "Adapta el dominio de Minecraft a JPA persistiendo 
 
 - Bloqueo de directorios (`model` y `repository`) al realizar el `git pull` en Windows debido a archivos en caché o en uso por el entorno de desarrollo, resuelto purgando los directorios obsoletos y reintentando la sincronización de manera limpia.
 
-## Tercera sesión: Implementación del CRUD REST (Entidad Hostil)
+## Cuarta sesión: Implementación del CRUD REST (Entidad Hostil)
 
 | Dato | Valor |
 |---|---|
@@ -156,3 +156,31 @@ Verifica que todo compile correctamente manteniendo la persistencia con H2.
 ### Problemas que resolví
 
 - Conflicto de rechazo en el `git push` (`[rejected] main -> main (fetch first)`) provocado por discrepancias de commits entre el entorno local y remoto, resuelto ejecutando un `git pull --rebase origin main` seguro en la máquina virtual antes de integrar la colección de Insomnia.
+
+## Quinta sesión: Simulación persistida de explosiones de Creeper
+
+| Dato | Valor |
+|---|---|
+| **Marca / agente** | OpenCode (asistente de código en terminal) |
+| **Modelo LLM exacto** | `DeepSeek v4.1 Flash 1017` |
+| **Fecha** | 11 de noviembre de 2026 |
+
+### Prompt usado
+
+Instrucción dada al agente: "Implementa la simulación persistida de explosiones para la entidad Creeper siguiendo reglas de negocio del juego (atributos como radio de explosión y estado de carga, y un servicio/controlador que simule la detonación modificando el estado y guardándolo en H2)."
+
+### Qué generó el agente
+
+- Añadió atributos en la entidad `Creeper` para gestionar el encendido, radio de explosión, carga por rayo y métodos específicos como `encender()`, `explotar()` y `cambiarRadioExplosion()`, dejando al Creeper con vida 0 tras detonar[cite: 7].
+- Creó `SimulacionService`, encargándose de encender la mecha, aplicar daño por distancia a las víctimas, destruir al Creeper y persistir todo en H2[cite: 7].
+- Expuso los endpoints correspondientes mediante un controlador (`POST /api/simulaciones/explosion`, `GET /api/simulaciones` y `GET /api/simulaciones/{id}`) utilizando DTOs de simulación[cite: 7].
+- Ejecutó la verificación mediante `./mvnw test`, logrando que pasaran **32 tests con 0 fallos**, validando las pruebas añadidas en `EntidadTest` y `SimulacionServiceTest`[cite: 7].
+
+### Qué corregí o decidí yo
+
+- Validé de forma cruzada la correcta integración de las reglas de negocio del Creeper con la arquitectura de herencia JOINED y la persistencia en H2.
+- Mantuve el control de versiones y el flujo de trabajo estructurado para respaldar los cambios de esta etapa de simulación.
+
+### Problemas que resolví
+
+- Coordinación de la lógica de negocio compleja entre múltiples entidades hijas sin romper los esquemas de persistencia existentes ni alterar el funcionamiento de los endpoints previos de la familia Hostil.
