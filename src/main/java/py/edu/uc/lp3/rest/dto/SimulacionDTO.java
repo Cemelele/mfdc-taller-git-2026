@@ -4,15 +4,24 @@ import java.util.List;
 
 public final class SimulacionDTO {
 
-    private SimulacionDTO() {}
+    private SimulacionDTO() {
+    }
 
-    public record Victima(String tipo, Double distancia) {}
+    public record VictimaRequest(Long hostilId, Double distancia) {
+    }
 
-    public record ExplosionRequest(Boolean cargado, List<Victima> victimas) {}
+    public record ExplosionRequest(Long creeperId, Boolean cargado,
+                                   List<VictimaRequest> victimas) {
+    }
 
-    public record VictimaResultado(String tipo, double distancia, int danio,
-                                   int vidaFinal, boolean viva, String detalle) {}
+    public record VictimaResultado(Long hostilId, String tipo, double distancia,
+                                   int danio, int vidaAntes, int vidaDespues,
+                                   boolean viva, String detalle) {
+    }
 
-    public record ExplosionResultado(boolean creeperCargado, double radio,
-                                     int danioBase, List<VictimaResultado> victimas) {}
+    public record ExplosionResultado(Long simulacionId, Long creeperId,
+                                     boolean creeperCargado, double radio, int danioBase,
+                                     boolean creeperDestruido,
+                                     List<VictimaResultado> victimas) {
+    }
 }

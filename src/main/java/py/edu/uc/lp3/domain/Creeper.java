@@ -1,11 +1,16 @@
 package py.edu.uc.lp3.domain;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+
+@Entity
+@DiscriminatorValue("creeper")
 public class Creeper extends Hostil implements Electrificable {
 
     private static final int DANIO_BASE = 15;
     private static final int DANIO_CARGADO = 25;
 
-    private final double radioExplosion;
+    private double radioExplosion;
     private boolean cargado;
 
     public Creeper() {
@@ -31,7 +36,7 @@ public class Creeper extends Hostil implements Electrificable {
         return cargado ? DANIO_CARGADO : DANIO_BASE;
     }
 
-    /** Regla: el dano baja linealmente con la distancia y es 0 fuera del radio. */
+    /** Regla 1: el dano baja linealmente con la distancia y es 0 fuera del radio. */
     public int danioA(double distancia) {
         if (distancia < 0) {
             throw new IllegalArgumentException("La distancia no puede ser negativa");
@@ -40,6 +45,15 @@ public class Creeper extends Hostil implements Electrificable {
             return 0;
         }
         return (int) Math.round(danioBase() * (1 - distancia / radioExplosion));
+    }
+
+    /**
+     * Regla 2: un Creeper cargado por un rayo explota con dano base mayor y
+     * la explosion lo destruye a el tambien. La simulacion llama a este
+     * mensaje para dejar constancia de que el Creeper ya no esta vivo.
+     */
+    public String explotar() {
+        return morir();
     }
 
     @Override

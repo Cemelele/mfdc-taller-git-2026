@@ -17,6 +17,8 @@ public class IndexController {
     public String index() {
         return "Bienvenido al taller de Git 2026 - LP3. "
                 + "Dominio: Minecraft. "
-                + "Probá GET /entidad/zombie, GET /rayo/cerdo, GET /ui/creeper o GET /entidades";
+                + "CRUD: GET/POST /api/hostiles. "
+                + "Simulacion: POST /api/simulaciones/explosion. "
+                + "Interfaz: GET /api/hostiles/{id}/rayo o GET /rayo/cerdo.";
     }
 }

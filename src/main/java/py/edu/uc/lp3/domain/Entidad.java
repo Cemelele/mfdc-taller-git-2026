@@ -4,6 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Transient;
+
 /**
  * Clase base "general": representa cualquier entidad del juego.
  * Es abstracta porque "una entidad" en abstracto no existe en el mundo:
@@ -13,18 +25,39 @@ import java.util.Objects;
  * metodos de la propia entidad: desde afuera, o desde un controller, no
  * se puede dejar una entidad en un estado imposible.
  *
+ * JPA la mapea como entidad raiz de la jerarquia persistida: Entidad es
+ * la tabla base y las hijas concretas (Zombie y Creeper) agregan sus
+ * propias tablas con estrategia JOINED. La columna discriminadora "tipo"
+ * permite reconstruir la clase concreta al leer una fila. El constructor
+ * vacio es protected: lo necesita JPA para reconstruir filas, no la capa
+ * HTTP.
+ *
  * Los metodos no imprimen: devuelven una String con lo que ocurrio. Asi
  * el controller puede armar el JSON con la respuesta de cada entidad.
  */
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
 public abstract class Entidad implements UICapable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private int vida;
-    private final String nombre;
-    private final Hitbox hitboxFisico;
-    private final String drop;
-    private final String imagen;
-    private final String sonido;
-    private final double velocidad;
+    private String nombre;
+
+    @Embedded
+    private Hitbox hitboxFisico;
+
+    @Column(name = "drop_item")
+    private String drop;
+
+    private String imagen;
+    private String sonido;
+    private double velocidad;
+
+    @Transient
     private final List<String> sonidos;
 
     // Posicion y orientacion, para que avanzar/rotar hagan algo real
@@ -33,6 +66,24 @@ public abstract class Entidad implements UICapable {
     private double z;
     private double rotacion; // en grados
     private boolean enElAire;
+
+    /**
+     * Constructor vacio exigido por JPA. Es protected: la capa HTTP y el
+     * resto del dominio no pueden crear una entidad en este estado; solo
+     * Hibernate, que despues escribe las columnas de la fila.
+     */
+    protected Entidad() {
+        this.nombre = "";
+        this.vida = 1;
+        this.hitboxFisico = new Hitbox();
+        this.drop = "";
+        this.imagen = "";
+        this.sonido = "";
+        this.velocidad = 0;
+        this.sonidos = new ArrayList<>();
+        this.rotacion = 0.0;
+        this.enElAire = false;
+    }
 
     protected Entidad(String nombre, int vida, Hitbox hitboxFisico, String drop,
                       String imagen, String sonido, double velocidad) {
@@ -199,8 +250,35 @@ public abstract class Entidad implements UICapable {
         return " y suena: " + sonido;
     }
 
+    // ---- Mensajes de actualizacion: cambian estado con validacion ----
+
+    public String renombrar(String nuevoNombre) {
+        if (nuevoNombre == null || nuevoNombre.isBlank()) {
+            throw new IllegalArgumentException("La entidad necesita un nombre");
+        }
+        this.nombre = nuevoNombre;
+        return "La entidad ahora se llama " + nuevoNombre + ".";
+    }
+
+    public String ajustarVida(int nuevaVida) {
+        if (nuevaVida <= 0) {
+            throw new IllegalArgumentException("La vida debe ser positiva");
+        }
+        this.vida = nuevaVida;
+        return nombre + " ajusta su vida a " + nuevaVida + ".";
+    }
+
+    public String cambiarVelocidad(double nuevaVelocidad) {
+        if (nuevaVelocidad < 0) {
+            throw new IllegalArgumentException("La velocidad no puede ser negativa");
+        }
+        this.velocidad = nuevaVelocidad;
+        return nombre + " cambia su velocidad a " + nuevaVelocidad + ".";
+    }
+
     // ---- Getters (las listas se devuelven como copia inmutable) ----
 
+    public Long getId() { return id; }
     public String getNombre() { return nombre; }
     public int getVida() { return vida; }
     public String getDrop() { return drop; }

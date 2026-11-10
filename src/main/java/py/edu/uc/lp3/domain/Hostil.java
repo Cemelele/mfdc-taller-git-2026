@@ -1,7 +1,14 @@
 package py.edu.uc.lp3.domain;
 
+import jakarta.persistence.MappedSuperclass;
+
 /**
  * Entidades que pueden atacar al jugador.
+ *
+ * Aporta el estado y el comportamiento comun de los hostiles, pero no es
+ * una entidad persistida por si misma: JPA la copia como @MappedSuperclass
+ * en las tablas de sus hijas concretas. Las clases que se persisten son
+ * Entidad (raiz), Zombie y Creeper.
  *
  * accionAtaque() es abstracto: cada mob hostil ataca de forma distinta
  * (esto es polimorfismo: misma llamada, comportamiento diferente).
@@ -9,9 +16,16 @@ package py.edu.uc.lp3.domain;
  * comportamiento() queda resuelto aqui y es final: un hostil siempre
  * se comporta asi, la diferencia la aporta cada hija en accionAtaque().
  */
+@MappedSuperclass
 public abstract class Hostil extends Entidad {
 
-    private final double rangoAggro;
+    private double rangoAggro;
+
+    /** Constructor vacio para JPA; no crea entidades de negocio. */
+    protected Hostil() {
+        super();
+        this.rangoAggro = 1;
+    }
 
     protected Hostil(String nombre, int vida, Hitbox hitboxFisico, String drop,
                      String imagen, String sonido, double velocidad, double rangoAggro) {
@@ -44,6 +58,14 @@ public abstract class Hostil extends Entidad {
         boolean detectado = distancia <= rangoAggro;
         return getNombre() + (detectado ? " detecta a " : " no detecta a ")
                 + objetivo.getNombre() + ".";
+    }
+
+    public String cambiarRangoAggro(double nuevoRango) {
+        if (nuevoRango <= 0) {
+            throw new IllegalArgumentException("El rango de aggro debe ser positivo");
+        }
+        this.rangoAggro = nuevoRango;
+        return getNombre() + " cambia su rango de aggro a " + nuevoRango + ".";
     }
 
     public double getRangoAggro() { return rangoAggro; }

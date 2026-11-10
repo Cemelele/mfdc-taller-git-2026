@@ -1,15 +1,25 @@
 package py.edu.uc.lp3.domain;
 
+import jakarta.persistence.Embeddable;
+
 /**
  * Clase auxiliar: el hitbox fisico de una entidad (ancho x alto).
  * Es una relacion de composicion: toda Entidad "tiene un" Hitbox.
  *
- * Inmutable: una vez creado no se puede deformar desde afuera.
+ * Se embebe en la tabla de la entidad. El constructor publico valida
+ * las dimensiones; el protected vacio existe solo para que JPA pueda
+ * reconstruir el valor embebido desde la fila.
  */
-public final class Hitbox {
+@Embeddable
+public class Hitbox {
 
-    private final double ancho;
-    private final double alto;
+    private double ancho;
+    private double alto;
+
+    protected Hitbox() {
+        this.ancho = 1.0;
+        this.alto = 1.0;
+    }
 
     public Hitbox(double ancho, double alto) {
         if (ancho <= 0 || alto <= 0) {
