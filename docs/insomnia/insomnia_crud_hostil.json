@@ -1,0 +1,327 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: Scratch Pad
+meta:
+  id: wrk_scratchpad
+  created: 1793210915841
+  modified: 1793210915841
+  description: ""
+collection:
+  - url: http://localhost:8080/api/hostiles
+    name: Listar Hostiles
+    meta:
+      id: req_9fd5d350b13f46b79607e8fa868ea1cc
+      created: 1794287313355
+      modified: 1794287522173
+      isPrivate: false
+      description: ""
+      sortKey: -1794287313355
+    method: GET
+    body:
+      mimeType: multipart/form-data
+    headers:
+      - name: Content-Type
+        value: multipart/form-data
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles
+    name: Crear Zombie
+    meta:
+      id: req_8d004566a27d4904a61670f643c2a54e
+      created: 1794287990776
+      modified: 1794288038719
+      isPrivate: false
+      description: ""
+      sortKey: -1794287990776
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "nombre": "Zombie de prueba",
+          "vida": 20.0,
+          "velocidad": 1.5,
+          "danioAtaque": 3.0,
+          "rangoAggro": 16.0,
+          "tipo": "ZOMBIE"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles/2
+    name: DELETE
+    meta:
+      id: req_581427e3bad048fc890a7baf94bf870a
+      created: 1794288701181
+      modified: 1794297870257
+      isPrivate: false
+      description: ""
+      sortKey: -1794288701181
+    method: DELETE
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles/1
+    name: Actualizar Zombie
+    meta:
+      id: req_33bc085178dd47b3b6f97f45de4f8448
+      created: 1794288754731
+      modified: 1794288829473
+      isPrivate: false
+      description: ""
+      sortKey: -1794287652065.5
+    method: PUT
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "nombre": "Zombie de prueba",
+          "vida": 10.5,
+          "velocidad": 1.5,
+          "danioAtaque": 3.0,
+          "rangoAggro": 16.0,
+          "tipo": "ZOMBIE"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles
+    name: Crear Creeper
+    meta:
+      id: req_e6378caa759d425b833fd94a8bb39ff6
+      created: 1794297471488
+      modified: 1794297531050
+      isPrivate: false
+      description: ""
+      sortKey: -1794297471488
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "tipo": "CREEPER",
+          "nombre": "Creeper Verde",
+          "puntosVida": 20,
+          "radioExplosion": 3.0,
+          "cargado": false
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles
+    name: Listar Todos
+    meta:
+      id: req_62a18aef22aa49f7b4bd03aa273cdda4
+      created: 1794297724294
+      modified: 1794297761937
+      isPrivate: false
+      description: ""
+      sortKey: -1794297724294
+    method: GET
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles/3
+    name: Buscar por ID
+    meta:
+      id: req_8c5c5f38c25d4a439723b250075b2797
+      created: 1794297774997
+      modified: 1794298005684
+      isPrivate: false
+      description: ""
+      sortKey: -1794297774997
+    method: GET
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles/3/rayo
+    name: "Interface Electrificable "
+    meta:
+      id: req_99765944b89f4f188533490631c2efc9
+      created: 1794297879119
+      modified: 1794297925611
+      isPrivate: false
+      description: ""
+      sortKey: -1794297879119
+    method: GET
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/simulaciones/explosion
+    name: Simulación de Explosión
+    meta:
+      id: req_e343638f16b5422bb020b142985c54f1
+      created: 1794297942577
+      modified: 1794298383558
+      isPrivate: false
+      description: ""
+      sortKey: -1794297942577
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "creeperId": 3,
+          "cargado": false,
+          "encendido": true,
+          "victimas": [
+            {
+              "hostilId": 4,
+              "distancia": 2.0
+            }
+          ]
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles
+    name: POST Ilegal (Datos Inválidos)
+    meta:
+      id: req_e084d32c3e9c4ccb89752bf4edc321fe
+      created: 1794298429092
+      modified: 1794298467601
+      isPrivate: false
+      description: ""
+      sortKey: -1794298429092
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "nombre": ""
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles/9999
+    name: "Excepción Hija 1: ID Inexistente"
+    meta:
+      id: req_2d76adcb9036474fba5cd17d2f949319
+      created: 1794298484948
+      modified: 1794298509472
+      isPrivate: false
+      description: ""
+      sortKey: -1794298484948
+    method: GET
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/simulaciones/explosion
+    name: "Excepción Hija 2: Simulación Inválida"
+    meta:
+      id: req_ba1f543cefdc44369f57ca6a758859ae
+      created: 1794298516118
+      modified: 1794298685125
+      isPrivate: false
+      description: ""
+      sortKey: -1794298516118
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "creeperId": 3,
+          "cargado": false,
+          "encendido": true,
+          "victimas": [
+            {
+              "hostilId": 4,
+              "distancia": -5.0
+            }
+          ]
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_99d30891da4bdcebc63947a8fc17f076de878684
+    created: 1793294301497
+    modified: 1793294301497
+environments:
+  name: Base Environment
+  meta:
+    id: env_99d30891da4bdcebc63947a8fc17f076de878684
+    created: 1793294301403
+    modified: 1793294301403
+    isPrivate: false
