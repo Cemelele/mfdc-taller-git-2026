@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import py.edu.uc.lp3.domain.Creeper;
+import py.edu.uc.lp3.domain.Entidad;
 import py.edu.uc.lp3.domain.Hostil;
+import py.edu.uc.lp3.exception.CreeperNoEncontradoException;
 import py.edu.uc.lp3.exception.EntidadInvalidaException;
 import py.edu.uc.lp3.exception.EntidadNoEncontradaException;
 import py.edu.uc.lp3.exception.SimulacionInvalidaException;
@@ -49,11 +51,7 @@ public class SimulacionService {
             throw new SimulacionInvalidaException("Debe indicar al menos una victima");
         }
 
-        Hostil fuente = buscarHostil(peticion.creeperId());
-        if (!(fuente instanceof Creeper creeper)) {
-            throw new EntidadInvalidaException("El hostil " + peticion.creeperId()
-                    + " no es un Creeper: no puede explotar");
-        }
+        Creeper creeper = buscarCreeper(peticion.creeperId());
 
         if (Boolean.TRUE.equals(peticion.cargado())) {
             creeper.recibirRayo();
@@ -105,7 +103,7 @@ public class SimulacionService {
     @Transactional(readOnly = true)
     public SimulacionExplosion buscar(Long id) {
         if (id == null) {
-            throw new EntidadNoEncontradaException(null);
+            throw new EntidadNoEncontradaException((Long) null);
         }
         return simulacionRepository.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(id));
@@ -122,9 +120,22 @@ public class SimulacionService {
                 simulacion.isCreeperDestruido(), victimas);
     }
 
+    private Creeper buscarCreeper(Long id) {
+        if (id == null) {
+            throw new CreeperNoEncontradoException((Long) null);
+        }
+        Entidad entidad = entidadRepository.findById(id)
+                .orElseThrow(() -> new CreeperNoEncontradoException(id));
+        if (!(entidad instanceof Creeper creeper)) {
+            throw new EntidadInvalidaException("El hostil " + id
+                    + " no es un Creeper: no puede explotar");
+        }
+        return creeper;
+    }
+
     private Hostil buscarHostil(Long id) {
         if (id == null) {
-            throw new EntidadNoEncontradaException(null);
+            throw new EntidadNoEncontradaException((Long) null);
         }
         return entidadRepository.findById(id)
                 .filter(Hostil.class::isInstance)

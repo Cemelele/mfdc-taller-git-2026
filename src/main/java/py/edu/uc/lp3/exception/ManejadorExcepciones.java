@@ -9,12 +9,19 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Un handler por cada hija de la jerarquia de excepciones del dominio.
- * El JSON incluye "tipo" para que el cliente distinga a las hermanas
- * aunque el codigo HTTP coincida.
+ * Traduce las excepciones del dominio a respuestas HTTP limpias.
+ * Cada hija de HostilDomainException tiene su codigo: 404 para recursos
+ * inexistentes y 400 para pedidos que rompen una regla de negocio.
+ * El JSON incluye "tipo" para distinguir excepciones hermanas aunque
+ * compartan el mismo codigo de estado.
  */
 @RestControllerAdvice
 public class ManejadorExcepciones {
+
+    @ExceptionHandler(CreeperNoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> creeperNoEncontrado(CreeperNoEncontradoException ex) {
+        return respuesta(HttpStatus.NOT_FOUND, ex);
+    }
 
     @ExceptionHandler(EntidadNoEncontradaException.class)
     public ResponseEntity<Map<String, Object>> noEncontrada(EntidadNoEncontradaException ex) {
@@ -28,10 +35,17 @@ public class ManejadorExcepciones {
 
     @ExceptionHandler(SimulacionInvalidaException.class)
     public ResponseEntity<Map<String, Object>> simulacionInvalida(SimulacionInvalidaException ex) {
-        return respuesta(HttpStatus.UNPROCESSABLE_ENTITY, ex);
+        return respuesta(HttpStatus.BAD_REQUEST, ex);
     }
 
-    private ResponseEntity<Map<String, Object>> respuesta(HttpStatus estado, EntidadException ex) {
+    /** Red de seguridad para cualquier excepcion nueva de la familia Hostil. */
+    @ExceptionHandler(HostilDomainException.class)
+    public ResponseEntity<Map<String, Object>> dominioInvalido(HostilDomainException ex) {
+        return respuesta(HttpStatus.BAD_REQUEST, ex);
+    }
+
+    private ResponseEntity<Map<String, Object>> respuesta(HttpStatus estado,
+                                                          HostilDomainException ex) {
         Map<String, Object> cuerpo = new LinkedHashMap<>();
         cuerpo.put("status", estado.value());
         cuerpo.put("error", estado.getReasonPhrase());

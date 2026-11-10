@@ -240,7 +240,7 @@ public class HostilService {
 
     private Hostil buscarEntidad(Long id) {
         if (id == null) {
-            throw new EntidadNoEncontradaException(null);
+            throw new EntidadNoEncontradaException((Long) null);
         }
         return repository.findById(id)
                 .filter(Hostil.class::isInstance)
