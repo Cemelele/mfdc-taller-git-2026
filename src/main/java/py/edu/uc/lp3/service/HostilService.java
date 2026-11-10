@@ -83,6 +83,9 @@ public class HostilService {
             if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
                 creeper.recibirRayo();
             }
+            if (Boolean.TRUE.equals(peticion.encendido()) && hostil instanceof Creeper creeper) {
+                creeper.encender();
+            }
         } catch (IllegalArgumentException e) {
             throw new EntidadInvalidaException(e.getMessage());
         }
@@ -117,6 +120,9 @@ public class HostilService {
             }
             if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
                 creeper.recibirRayo();
+            }
+            if (Boolean.TRUE.equals(peticion.encendido()) && hostil instanceof Creeper creeper) {
+                creeper.encender();
             }
         } catch (IllegalArgumentException e) {
             throw new EntidadInvalidaException(e.getMessage());
@@ -200,6 +206,9 @@ public class HostilService {
             }
             if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
                 creeper.recibirRayo();
+            }
+            if (Boolean.TRUE.equals(peticion.encendido()) && hostil instanceof Creeper creeper) {
+                creeper.encender();
             }
             return hostil;
         } catch (IllegalArgumentException e) {

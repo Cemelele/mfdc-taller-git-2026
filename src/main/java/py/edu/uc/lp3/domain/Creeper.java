@@ -12,23 +12,26 @@ public class Creeper extends Hostil implements Electrificable {
 
     private double radioExplosion;
     private boolean cargado;
+    private boolean encendido;
 
     public Creeper() {
         super("Creeper", 20, new Hitbox(0.6, 1.7), "Polvora",
                 "texturas/creeper.png", "siseo", 0.25, 16, DANIO_BASE);
         this.radioExplosion = 3.0;
         this.cargado = false;
+        this.encendido = false;
     }
 
     /** El Creeper no golpea: se acerca, sisea y explota. */
     @Override
     public String accionAtaque(Jugador objetivo) {
         reproducirSonido("fuse");
+        encender();
         int danio = danioBase();
         String resultado = "El Creeper sisea y explota en un radio de " + radioExplosion
                 + " bloques" + (cargado ? ", cargado por un rayo (" + danio + " de dano)" : "")
                 + ". " + objetivo.recibirDanio(danio);
-        return resultado + ". " + morir(); // la explosion lo destruye a el tambien
+        return resultado + ". " + explotar(); // la explosion lo destruye a el tambien
     }
 
     /** Dano maximo de la explosion: el que recibe quien esta pegado al Creeper. */
@@ -47,13 +50,31 @@ public class Creeper extends Hostil implements Electrificable {
         return (int) Math.round(danioBase() * (1 - distancia / radioExplosion));
     }
 
+    /** Enciende la mecha: queda en cuenta regresiva antes de detonar. */
+    public String encender() {
+        if (estaMuerto()) {
+            return getNombre() + " ya murio, no puede encender su mecha.";
+        }
+        this.encendido = true;
+        return getNombre() + " enciende su mecha y sisea antes de explotar.";
+    }
+
     /**
      * Regla 2: un Creeper cargado por un rayo explota con dano base mayor y
      * la explosion lo destruye a el tambien. La simulacion llama a este
      * mensaje para dejar constancia de que el Creeper ya no esta vivo.
      */
     public String explotar() {
+        this.encendido = true;
         return morir();
+    }
+
+    public String cambiarRadioExplosion(double nuevoRadio) {
+        if (nuevoRadio <= 0) {
+            throw new IllegalArgumentException("El radio de explosion debe ser positivo");
+        }
+        this.radioExplosion = nuevoRadio;
+        return getNombre() + " cambia su radio de explosion a " + nuevoRadio + " bloques.";
     }
 
     @Override
@@ -69,5 +90,6 @@ public class Creeper extends Hostil implements Electrificable {
     }
 
     public boolean isCargado() { return cargado; }
+    public boolean isEncendido() { return encendido; }
     public double getRadioExplosion() { return radioExplosion; }
 }

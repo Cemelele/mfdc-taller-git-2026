@@ -10,8 +10,13 @@ public final class SimulacionDTO {
     public record VictimaRequest(Long hostilId, Double distancia) {
     }
 
-    public record ExplosionRequest(Long creeperId, Boolean cargado,
+    public record ExplosionRequest(Long creeperId, Boolean cargado, Boolean encendido,
                                    List<VictimaRequest> victimas) {
+
+        public ExplosionRequest(Long creeperId, Boolean cargado,
+                                List<VictimaRequest> victimas) {
+            this(creeperId, cargado, null, victimas);
+        }
     }
 
     public record VictimaResultado(Long hostilId, String tipo, double distancia,
@@ -20,7 +25,8 @@ public final class SimulacionDTO {
     }
 
     public record ExplosionResultado(Long simulacionId, Long creeperId,
-                                     boolean creeperCargado, double radio, int danioBase,
+                                     boolean creeperCargado, boolean creeperEncendido,
+                                     double radio, int danioBase,
                                      boolean creeperDestruido,
                                      List<VictimaResultado> victimas) {
     }

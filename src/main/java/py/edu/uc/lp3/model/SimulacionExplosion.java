@@ -28,6 +28,7 @@ public class SimulacionExplosion {
     private LocalDateTime fecha;
     private Long creeperId;
     private boolean creeperCargado;
+    private boolean creeperEncendido;
     private double radio;
     private int danioBase;
     private boolean creeperDestruido;
@@ -42,9 +43,15 @@ public class SimulacionExplosion {
 
     public SimulacionExplosion(Long creeperId, boolean creeperCargado,
                                double radio, int danioBase) {
+        this(creeperId, creeperCargado, true, radio, danioBase);
+    }
+
+    public SimulacionExplosion(Long creeperId, boolean creeperCargado,
+                               boolean creeperEncendido, double radio, int danioBase) {
         this.fecha = LocalDateTime.now();
         this.creeperId = creeperId;
         this.creeperCargado = creeperCargado;
+        this.creeperEncendido = creeperEncendido;
         this.radio = radio;
         this.danioBase = danioBase;
         this.creeperDestruido = false;
@@ -63,6 +70,7 @@ public class SimulacionExplosion {
     public LocalDateTime getFecha() { return fecha; }
     public Long getCreeperId() { return creeperId; }
     public boolean isCreeperCargado() { return creeperCargado; }
+    public boolean isCreeperEncendido() { return creeperEncendido; }
     public double getRadio() { return radio; }
     public int getDanioBase() { return danioBase; }
     public boolean isCreeperDestruido() { return creeperDestruido; }

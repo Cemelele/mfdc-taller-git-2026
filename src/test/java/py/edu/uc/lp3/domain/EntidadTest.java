@@ -159,4 +159,41 @@ class EntidadTest {
 
         assertTrue(zombie.getPosicion().contains("2.0"), zombie.getPosicion());
     }
+
+    // ---- Regla de negocio: explosion del Creeper ----
+
+    @Test
+    void elCreeperEnciendeSuMechaYExplotaDestruyendose() {
+        Creeper creeper = new Creeper();
+
+        assertFalse(creeper.isEncendido());
+        assertTrue(creeper.encender().contains("enciende su mecha"));
+        assertTrue(creeper.isEncendido());
+
+        creeper.explotar();
+        assertTrue(creeper.estaMuerto());
+        assertEquals(0, creeper.getVida());
+    }
+
+    @Test
+    void elDanoDeLaExplosionBajaConLaDistanciaYSeAnulaFueraDelRadio() {
+        Creeper creeper = new Creeper();
+
+        assertEquals(15, creeper.danioA(0));
+        assertTrue(creeper.danioA(1.5) < creeper.danioA(0));
+        assertEquals(0, creeper.danioA(3.0));
+        assertEquals(0, creeper.danioA(5.0));
+    }
+
+    @Test
+    void unCreeperCargadoExplotaConMasDanoYElRadioSePuedeCambiar() {
+        Creeper creeper = new Creeper();
+        creeper.recibirRayo();
+
+        assertTrue(creeper.isCargado());
+        assertEquals(25, creeper.danioBase());
+        creeper.cambiarRadioExplosion(5.0);
+        assertEquals(5.0, creeper.getRadioExplosion());
+        assertThrows(IllegalArgumentException.class, () -> creeper.cambiarRadioExplosion(0));
+    }
 }

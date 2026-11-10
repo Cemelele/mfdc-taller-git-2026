@@ -58,9 +58,11 @@ public class SimulacionService {
         if (Boolean.TRUE.equals(peticion.cargado())) {
             creeper.recibirRayo();
         }
+        creeper.encender();
 
         SimulacionExplosion simulacion = new SimulacionExplosion(creeper.getId(),
-                creeper.isCargado(), creeper.getRadioExplosion(), creeper.danioBase());
+                creeper.isCargado(), creeper.isEncendido(),
+                creeper.getRadioExplosion(), creeper.danioBase());
 
         for (VictimaRequest victimaRequest : peticion.victimas()) {
             if (victimaRequest == null || victimaRequest.hostilId() == null) {
@@ -115,7 +117,8 @@ public class SimulacionService {
                         r.getDanio(), r.getVidaAntes(), r.getVidaDespues(), r.isViva(), r.getDetalle()))
                 .toList();
         return new ExplosionResultado(simulacion.getId(), simulacion.getCreeperId(),
-                simulacion.isCreeperCargado(), simulacion.getRadio(), simulacion.getDanioBase(),
+                simulacion.isCreeperCargado(), simulacion.isCreeperEncendido(),
+                simulacion.getRadio(), simulacion.getDanioBase(),
                 simulacion.isCreeperDestruido(), victimas);
     }
 
