@@ -184,3 +184,31 @@ Instrucción dada al agente: "Implementa la simulación persistida de explosione
 ### Problemas que resolví
 
 - Coordinación de la lógica de negocio compleja entre múltiples entidades hijas sin romper los esquemas de persistencia existentes ni alterar el funcionamiento de los endpoints previos de la familia Hostil.
+
+## Sexta sesión: Jerarquía de excepciones de dominio y manejador global
+
+| Dato | Valor |
+|---|---|
+| **Marca / agente** | OpenCode (asistente de código en terminal) |
+| **Modelo LLM exacto** | `DeepSeek v4.1 Flash 1017` |
+| **Fecha** | 11 de noviembre de 2026 |
+
+### Prompt usado
+
+Instrucción dada al agente: "Implementa el Paso 4 del taller estructurando la gestión de excepciones de dominio: creando una excepción base, excepciones hijas específicas y un manejador global con @RestControllerAdvice que devuelva respuestas HTTP estructuradas en JSON."
+
+### Qué generó el agente
+
+- Creó la excepción base de dominio `HostilDomainException` extendiendo de `RuntimeException`, junto con `EntidadException` y clases hijas específicas como `CreeperNoEncontradoException` y `SimulacionInvalidaException`.
+- Implementó el manejador global de excepciones mediante `@RestControllerAdvice` (`ManejadorExcepciones`), configurando respuestas JSON estructuradas con códigos 404 para recursos inexistentes y 400 para reglas de negocio inválidas[cite: 8].
+- Ajustó `SimulacionService` para lanzar `CreeperNoEncontradoException` cuando el Creeper requerido no existe en el sistema[cite: 8].
+- Incorporó pruebas específicas en `ManejadorExcepcionesTest`, alcanzando un total de **36 tests con 0 fallos** y un resultado de `BUILD SUCCESS` al ejecutar `./mvnw test`[cite: 8].
+
+### Qué corregí o decidí yo
+
+- Verifiqué la integración entre la capa de negocio y el manejo centralizado de errores para estandarizar las respuestas de la API REST ante fallos de validación o recursos no encontrados.
+- Aseguré la correcta sincronización y control de versiones de los nuevos componentes de arquitectura dentro del repositorio del taller.
+
+### Problemas que resolví
+
+- Prevención de respuestas de error genéricas o no controladas en el servidor, estableciendo un contrato de respuestas limpia y predecible en formato JSON para el cliente HTTP.
