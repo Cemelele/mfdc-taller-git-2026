@@ -2,6 +2,9 @@ package py.edu.uc.lp3.domain;
 
 public class Creeper extends Hostil implements Electrificable {
 
+    private static final int DANIO_BASE = 15;
+    private static final int DANIO_CARGADO = 25;
+
     private final double radioExplosion;
     private boolean cargado;
 
@@ -16,11 +19,27 @@ public class Creeper extends Hostil implements Electrificable {
     @Override
     public String accionAtaque(Jugador objetivo) {
         reproducirSonido("fuse");
-        int danio = cargado ? 25 : 15;
+        int danio = danioBase();
         String resultado = "El Creeper sisea y explota en un radio de " + radioExplosion
                 + " bloques" + (cargado ? ", cargado por un rayo (" + danio + " de dano)" : "")
                 + ". " + objetivo.recibirDanio(danio);
         return resultado + ". " + morir(); // la explosion lo destruye a el tambien
+    }
+
+    /** Dano maximo de la explosion: el que recibe quien esta pegado al Creeper. */
+    public int danioBase() {
+        return cargado ? DANIO_CARGADO : DANIO_BASE;
+    }
+
+    /** Regla: el dano baja linealmente con la distancia y es 0 fuera del radio. */
+    public int danioA(double distancia) {
+        if (distancia < 0) {
+            throw new IllegalArgumentException("La distancia no puede ser negativa");
+        }
+        if (distancia >= radioExplosion) {
+            return 0;
+        }
+        return (int) Math.round(danioBase() * (1 - distancia / radioExplosion));
     }
 
     @Override
