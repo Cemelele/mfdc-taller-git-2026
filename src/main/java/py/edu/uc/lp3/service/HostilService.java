@@ -77,6 +77,9 @@ public class HostilService {
             if (peticion.rangoAggro() != null) {
                 hostil.cambiarRangoAggro(peticion.rangoAggro());
             }
+            if (peticion.danioAtaque() != null) {
+                hostil.cambiarDanioAtaque(peticion.danioAtaque());
+            }
             if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
                 creeper.recibirRayo();
             }
@@ -108,6 +111,9 @@ public class HostilService {
             hostil.cambiarVelocidad(peticion.velocidad());
             if (peticion.rangoAggro() != null) {
                 hostil.cambiarRangoAggro(peticion.rangoAggro());
+            }
+            if (peticion.danioAtaque() != null) {
+                hostil.cambiarDanioAtaque(peticion.danioAtaque());
             }
             if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
                 creeper.recibirRayo();
@@ -148,9 +154,13 @@ public class HostilService {
             throw new EntidadInvalidaException("El cuerpo de la entidad no puede estar vacio");
         }
         String tipo = normalizarTipo(peticion.tipo());
-        String nombre = (peticion.nombre() == null || peticion.nombre().isBlank())
-                ? null
-                : peticion.nombre().trim();
+        String nombre = peticion.nombre();
+        if (nombre != null) {
+            if (nombre.isBlank()) {
+                throw new EntidadInvalidaException("El nombre no puede estar vacio");
+            }
+            nombre = nombre.trim();
+        }
         int vida = peticion.vida() == null ? VIDA_POR_DEFECTO : peticion.vida();
         if (vida <= 0) {
             throw new EntidadInvalidaException("La vida debe ser mayor a 0");
@@ -160,6 +170,9 @@ public class HostilService {
         }
         if (peticion.rangoAggro() != null && peticion.rangoAggro() <= 0) {
             throw new EntidadInvalidaException("El rango de aggro debe ser positivo");
+        }
+        if (peticion.danioAtaque() != null && peticion.danioAtaque() <= 0) {
+            throw new EntidadInvalidaException("El dano de ataque debe ser positivo");
         }
         try {
             Hostil hostil = switch (tipo) {
@@ -181,6 +194,9 @@ public class HostilService {
             }
             if (peticion.rangoAggro() != null) {
                 hostil.cambiarRangoAggro(peticion.rangoAggro());
+            }
+            if (peticion.danioAtaque() != null) {
+                hostil.cambiarDanioAtaque(peticion.danioAtaque());
             }
             if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
                 creeper.recibirRayo();

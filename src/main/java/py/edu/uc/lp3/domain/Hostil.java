@@ -20,20 +20,32 @@ import jakarta.persistence.MappedSuperclass;
 public abstract class Hostil extends Entidad {
 
     private double rangoAggro;
+    private int danioAtaque;
 
     /** Constructor vacio para JPA; no crea entidades de negocio. */
     protected Hostil() {
         super();
         this.rangoAggro = 1;
+        this.danioAtaque = 1;
     }
 
     protected Hostil(String nombre, int vida, Hitbox hitboxFisico, String drop,
                      String imagen, String sonido, double velocidad, double rangoAggro) {
+        this(nombre, vida, hitboxFisico, drop, imagen, sonido, velocidad, rangoAggro, 1);
+    }
+
+    protected Hostil(String nombre, int vida, Hitbox hitboxFisico, String drop,
+                     String imagen, String sonido, double velocidad, double rangoAggro,
+                     int danioAtaque) {
         super(nombre, vida, hitboxFisico, drop, imagen, sonido, velocidad);
         if (rangoAggro <= 0) {
             throw new IllegalArgumentException("El rango de aggro de " + nombre + " debe ser positivo");
         }
+        if (danioAtaque <= 0) {
+            throw new IllegalArgumentException("El dano de ataque de " + nombre + " debe ser positivo");
+        }
         this.rangoAggro = rangoAggro;
+        this.danioAtaque = danioAtaque;
     }
 
     /**
@@ -68,5 +80,14 @@ public abstract class Hostil extends Entidad {
         return getNombre() + " cambia su rango de aggro a " + nuevoRango + ".";
     }
 
+    public String cambiarDanioAtaque(int nuevoDanioAtaque) {
+        if (nuevoDanioAtaque <= 0) {
+            throw new IllegalArgumentException("El dano de ataque debe ser positivo");
+        }
+        this.danioAtaque = nuevoDanioAtaque;
+        return getNombre() + " cambia su dano de ataque a " + nuevoDanioAtaque + ".";
+    }
+
     public double getRangoAggro() { return rangoAggro; }
+    public int getDanioAtaque() { return danioAtaque; }
 }

@@ -6,7 +6,7 @@ public class Esqueleto extends Hostil {
 
     public Esqueleto() {
         super("Esqueleto", 20, new Hitbox(0.6, 1.99), "Huesos y flechas",
-                "texturas/esqueleto.png", "huesos", 0.25, 16);
+                "texturas/esqueleto.png", "huesos", 0.25, 16, 2);
         this.flechas = 10;
     }
 
@@ -17,7 +17,7 @@ public class Esqueleto extends Hostil {
         }
         flechas--;
         return "Esqueleto dispara una flecha a " + objetivo.getNombre()
-                + ". " + objetivo.recibirDanio(2) + " (quedan " + flechas + " flechas)";
+                + ". " + objetivo.recibirDanio(getDanioAtaque()) + " (quedan " + flechas + " flechas)";
     }
 
     public int getFlechas() { return flechas; }

@@ -6,14 +6,14 @@ public class Enderman extends Hostil {
 
     public Enderman() {
         super("Enderman", 40, new Hitbox(0.6, 2.9), "Perla de ender",
-                "texturas/enderman.png", "grito", 0.3, 64);
+                "texturas/enderman.png", "grito", 0.3, 64, 7);
         this.bloqueEnMano = null;
     }
 
     @Override
     public String accionAtaque(Jugador objetivo) {
         return teletransportarse() + " Luego ataca a " + objetivo.getNombre()
-                + ". " + objetivo.recibirDanio(7);
+                + ". " + objetivo.recibirDanio(getDanioAtaque());
     }
 
     /** El Enderman cambia de posicion; por eso usa desplazar() del padre. */

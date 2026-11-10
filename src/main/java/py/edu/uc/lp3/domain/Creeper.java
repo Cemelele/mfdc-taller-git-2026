@@ -15,7 +15,7 @@ public class Creeper extends Hostil implements Electrificable {
 
     public Creeper() {
         super("Creeper", 20, new Hitbox(0.6, 1.7), "Polvora",
-                "texturas/creeper.png", "siseo", 0.25, 16);
+                "texturas/creeper.png", "siseo", 0.25, 16, DANIO_BASE);
         this.radioExplosion = 3.0;
         this.cargado = false;
     }

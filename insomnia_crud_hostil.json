@@ -1,0 +1,127 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: Scratch Pad
+meta:
+  id: wrk_scratchpad
+  created: 1793210915841
+  modified: 1793210915841
+  description: ""
+collection:
+  - url: http://localhost:8080/api/hostiles
+    name: Listar Hostiles
+    meta:
+      id: req_9fd5d350b13f46b79607e8fa868ea1cc
+      created: 1794287313355
+      modified: 1794287522173
+      isPrivate: false
+      description: ""
+      sortKey: -1794287313355
+    method: GET
+    body:
+      mimeType: multipart/form-data
+    headers:
+      - name: Content-Type
+        value: multipart/form-data
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles
+    name: Crear Zombie
+    meta:
+      id: req_8d004566a27d4904a61670f643c2a54e
+      created: 1794287990776
+      modified: 1794288038719
+      isPrivate: false
+      description: ""
+      sortKey: -1794287990776
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "nombre": "Zombie de prueba",
+          "vida": 20.0,
+          "velocidad": 1.5,
+          "danioAtaque": 3.0,
+          "rangoAggro": 16.0,
+          "tipo": "ZOMBIE"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles/1
+    name: Borrar Zombie
+    meta:
+      id: req_581427e3bad048fc890a7baf94bf870a
+      created: 1794288701181
+      modified: 1794289008406
+      isPrivate: false
+      description: ""
+      sortKey: -1794288701181
+    method: DELETE
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/api/hostiles/1
+    name: Actualizar Zombie
+    meta:
+      id: req_33bc085178dd47b3b6f97f45de4f8448
+      created: 1794288754731
+      modified: 1794288829473
+      isPrivate: false
+      description: ""
+      sortKey: -1794287652065.5
+    method: PUT
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "nombre": "Zombie de prueba",
+          "vida": 10.5,
+          "velocidad": 1.5,
+          "danioAtaque": 3.0,
+          "rangoAggro": 16.0,
+          "tipo": "ZOMBIE"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_99d30891da4bdcebc63947a8fc17f076de878684
+    created: 1793294301497
+    modified: 1793294301497
+environments:
+  name: Base Environment
+  meta:
+    id: env_99d30891da4bdcebc63947a8fc17f076de878684
+    created: 1793294301403
+    modified: 1793294301403
+    isPrivate: false

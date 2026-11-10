@@ -18,12 +18,14 @@ public final class HostilDTO {
     }
 
     public record HostilRequest(String tipo, String nombre, Integer vida,
-                                Double velocidad, Double rangoAggro, Boolean cargado) {
+                                Double velocidad, Double rangoAggro,
+                                Integer danioAtaque, Boolean cargado) {
     }
 
     public record HostilResponse(Long id, String tipo, String nombre, int vida,
-                                 double velocidad, double rangoAggro, Double radioExplosion,
-                                 boolean cargado, double x, double y, double z,
+                                 double velocidad, double rangoAggro, int danioAtaque,
+                                 Double radioExplosion, boolean cargado,
+                                 double x, double y, double z,
                                  String imagen, String sonido) {
 
         public static HostilResponse desde(Hostil hostil) {
@@ -31,8 +33,8 @@ public final class HostilDTO {
             Double radio = hostil instanceof Creeper creeper ? creeper.getRadioExplosion() : null;
             boolean cargado = hostil instanceof Creeper creeper && creeper.isCargado();
             return new HostilResponse(hostil.getId(), tipo, hostil.getNombre(), hostil.getVida(),
-                    hostil.getVelocidad(), hostil.getRangoAggro(), radio, cargado,
-                    hostil.getX(), hostil.getY(), hostil.getZ(),
+                    hostil.getVelocidad(), hostil.getRangoAggro(), hostil.getDanioAtaque(),
+                    radio, cargado, hostil.getX(), hostil.getY(), hostil.getZ(),
                     hostil.getImagen(), hostil.getSonido());
         }
     }

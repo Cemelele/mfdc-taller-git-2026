@@ -22,14 +22,14 @@ public class Zombie extends Hostil {
     /** Constructor completo: el que resuelve el estado y llama a super. */
     public Zombie(String nombre, int vida) {
         super(nombre, vida, new Hitbox(0.6, 1.95), "Carne podrida",
-                "texturas/zombie.png", "gruñido", 0.23, 35);
+                "texturas/zombie.png", "gruñido", 0.23, 35, 3);
         this.seQuemaAlSol = true;
     }
 
     @Override
     public String accionAtaque(Jugador objetivo) {
         return "Zombie golpea cuerpo a cuerpo a " + objetivo.getNombre()
-                + ". " + objetivo.recibirDanio(3);
+                + ". " + objetivo.recibirDanio(getDanioAtaque());
     }
 
     public String amanecer() {
