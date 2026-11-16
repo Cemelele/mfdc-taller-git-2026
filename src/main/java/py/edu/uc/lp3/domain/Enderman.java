@@ -23,9 +23,6 @@ public class Enderman extends Hostil {
     }
 
     public String tomarBloque(String bloque) {
-        if (bloque == null || bloque.isBlank()) {
-            throw new IllegalArgumentException("No se puede tomar un bloque vacio");
-        }
         this.bloqueEnMano = bloque;
         return "Enderman levanta un bloque de " + bloque + ".";
     }

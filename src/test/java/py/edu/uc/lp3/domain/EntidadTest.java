@@ -1,17 +1,17 @@
 package py.edu.uc.lp3.domain;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 /**
- * Prueba los tres mecanismos del ejercicio sobre el dominio de Minecraft:
- * sobreescritura, sobrecarga de mensajes y constructores simples y
- * sobrecargados. Ademas, que nadie desde afuera deje una entidad invalida.
+ * Prueba los mecanismos del dominio de Minecraft y verifica que la capa de
+ * dominio sea pura: muta estado, pero no valida ni lanza excepciones. Las
+ * validaciones viven en los services.
  */
 class EntidadTest {
 
@@ -53,10 +53,18 @@ class EntidadTest {
     }
 
     @Test
-    void laSobrecargaDeRecibirDanioTambienValidaSusArgumentos() {
+    void elDominioSoloMutaEstadoYNoValidaSusArgumentos() {
         Entidad zombie = new Zombie();
-        assertThrows(IllegalArgumentException.class, () -> zombie.recibirDanio(-1));
-        assertThrows(IllegalArgumentException.class, () -> zombie.recibirDanio(5, "  "));
+
+        assertDoesNotThrow(() -> zombie.recibirDanio(-1));
+        assertDoesNotThrow(() -> zombie.recibirDanio(5, "  "));
+        assertEquals(16, zombie.getVida());
+
+        assertDoesNotThrow(() -> new Zombie(0));
+        assertDoesNotThrow(() -> new Zombie(-10));
+        assertDoesNotThrow(() -> new Jugador(" "));
+        assertDoesNotThrow(() -> new Aldeano(""));
+        assertDoesNotThrow(() -> new Hitbox(0, 0));
     }
 
     @Test
@@ -80,6 +88,7 @@ class EntidadTest {
         Zombie vidaPersonalizada = new Zombie(35);
         Aldeano granjero = new Aldeano();
         Aldeano herrero = new Aldeano("Herrero");
+        Creeper creeperPersonalizado = new Creeper("Boom", 5);
 
         assertEquals("Steve", porDefecto.getNombre());
         assertEquals("Alex", conNombre.getNombre());
@@ -87,19 +96,14 @@ class EntidadTest {
         assertEquals(35, vidaPersonalizada.getVida());
         assertEquals("Granjero", granjero.getProfesion());
         assertEquals("Herrero", herrero.getProfesion());
-    }
-
-    @Test
-    void NingunConstructorDejaVidaNoPositiva() {
-        assertThrows(IllegalArgumentException.class, () -> new Zombie(0));
-        assertThrows(IllegalArgumentException.class, () -> new Zombie(-10));
-        assertThrows(IllegalArgumentException.class, () -> new Jugador(" "));
+        assertEquals("Boom", creeperPersonalizado.getNombre());
+        assertEquals(5, creeperPersonalizado.getVida());
     }
 
     // ---- Ocultamiento: el estado no se pisa desde afuera ----
 
     @Test
-    void LaVidaSoloCambiaPorMensajesYNuncaSeVuelveNegativa() {
+    void laVidaNuncaSeVuelveNegativa() {
         Entidad cerdo = new Cerdo();
 
         cerdo.recibirDanio(6);
@@ -109,8 +113,7 @@ class EntidadTest {
         assertTrue(cerdo.estaMuerto());
         assertEquals(0, cerdo.getVida());
 
-        String despuesDeMuir = cerdo.recibirDanio(5);
-        assertTrue(despuesDeMuir.contains("ya murio"), despuesDeMuir);
+        cerdo.recibirDanio(5);
         assertEquals(0, cerdo.getVida());
     }
 
@@ -160,40 +163,30 @@ class EntidadTest {
         assertTrue(zombie.getPosicion().contains("2.0"), zombie.getPosicion());
     }
 
-    // ---- Regla de negocio: explosion del Creeper ----
+    // ---- Creeper como entidad: solo muta su propio estado ----
 
     @Test
-    void elCreeperEnciendeSuMechaYExplotaDestruyendose() {
+    void elCreeperEnciendeSuMechaYMutaSuEstadoSimple() {
         Creeper creeper = new Creeper();
 
         assertFalse(creeper.isEncendido());
         assertTrue(creeper.encender().contains("enciende su mecha"));
         assertTrue(creeper.isEncendido());
 
-        creeper.explotar();
+        creeper.morir();
         assertTrue(creeper.estaMuerto());
         assertEquals(0, creeper.getVida());
     }
 
     @Test
-    void elDanoDeLaExplosionBajaConLaDistanciaYSeAnulaFueraDelRadio() {
-        Creeper creeper = new Creeper();
-
-        assertEquals(15, creeper.danioA(0));
-        assertTrue(creeper.danioA(1.5) < creeper.danioA(0));
-        assertEquals(0, creeper.danioA(3.0));
-        assertEquals(0, creeper.danioA(5.0));
-    }
-
-    @Test
-    void unCreeperCargadoExplotaConMasDanoYElRadioSePuedeCambiar() {
+    void elCreeperSeCargaYSeLePuedeCambiarElRadioSinValidaciones() {
         Creeper creeper = new Creeper();
         creeper.recibirRayo();
 
         assertTrue(creeper.isCargado());
-        assertEquals(25, creeper.danioBase());
         creeper.cambiarRadioExplosion(5.0);
         assertEquals(5.0, creeper.getRadioExplosion());
-        assertThrows(IllegalArgumentException.class, () -> creeper.cambiarRadioExplosion(0));
+        assertDoesNotThrow(() -> creeper.cambiarRadioExplosion(0));
+        assertEquals(0.0, creeper.getRadioExplosion());
     }
 }

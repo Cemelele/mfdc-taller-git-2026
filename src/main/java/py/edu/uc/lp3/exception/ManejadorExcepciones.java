@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * Traduce las excepciones del dominio a respuestas HTTP limpias.
  * Cada hija de HostilDomainException tiene su codigo: 404 para recursos
- * inexistentes y 400 para pedidos que rompen una regla de negocio.
+ * inexistentes, 400 para pedidos invalidos y 409 cuando el estado actual
+ * del recurso no permite la operacion (por ejemplo, revivir un muerto).
  * El JSON incluye "tipo" para distinguir excepciones hermanas aunque
  * compartan el mismo codigo de estado.
  */
@@ -36,6 +37,11 @@ public class ManejadorExcepciones {
     @ExceptionHandler(SimulacionInvalidaException.class)
     public ResponseEntity<Map<String, Object>> simulacionInvalida(SimulacionInvalidaException ex) {
         return respuesta(HttpStatus.BAD_REQUEST, ex);
+    }
+
+    @ExceptionHandler(EstadoInvalidoException.class)
+    public ResponseEntity<Map<String, Object>> estadoInvalido(EstadoInvalidoException ex) {
+        return respuesta(HttpStatus.CONFLICT, ex);
     }
 
     /** Red de seguridad para cualquier excepcion nueva de la familia Hostil. */

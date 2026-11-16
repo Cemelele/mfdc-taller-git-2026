@@ -1,6 +1,7 @@
 package py.edu.uc.lp3.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -13,6 +14,8 @@ import org.springframework.context.annotation.Import;
 
 import py.edu.uc.lp3.domain.Creeper;
 import py.edu.uc.lp3.domain.Zombie;
+import py.edu.uc.lp3.exception.EstadoInvalidoException;
+import py.edu.uc.lp3.exception.SimulacionInvalidaException;
 import py.edu.uc.lp3.model.SimulacionExplosion;
 import py.edu.uc.lp3.repository.EntidadRepository;
 import py.edu.uc.lp3.repository.SimulacionExplosionRepository;
@@ -77,5 +80,61 @@ class SimulacionServiceTest {
         assertTrue(resultado.creeperCargado());
         assertEquals(25, resultado.danioBase());
         assertTrue(resultado.creeperDestruido());
+    }
+
+    @Test
+    void elDanoBajaConLaDistanciaYSeAnulaFueraDelRadio() {
+        Long creeperId = entidadRepository.save(new Creeper()).getId();
+        Long cercaId = entidadRepository.save(new Zombie("Cerca", 30)).getId();
+        Long medioId = entidadRepository.save(new Zombie("Medio", 30)).getId();
+        Long lejosId = entidadRepository.save(new Zombie("Lejos", 30)).getId();
+
+        ExplosionResultado resultado = service.simularExplosion(new ExplosionRequest(
+                creeperId, false,
+                List.of(new VictimaRequest(cercaId, 0.0),
+                        new VictimaRequest(medioId, 1.5),
+                        new VictimaRequest(lejosId, 3.0))));
+
+        assertEquals(15, resultado.victimas().get(0).danio());
+        assertTrue(resultado.victimas().get(1).danio() < 15);
+        assertEquals(0, resultado.victimas().get(2).danio());
+    }
+
+    @Test
+    void unaDistanciaNegativaEsUnaSimulacionInvalida() {
+        Long creeperId = entidadRepository.save(new Creeper()).getId();
+        Long zombieId = entidadRepository.save(new Zombie("Zombie", 30)).getId();
+
+        assertThrows(SimulacionInvalidaException.class,
+                () -> service.simularExplosion(new ExplosionRequest(
+                        creeperId, false,
+                        List.of(new VictimaRequest(zombieId, -1.0)))));
+    }
+
+    @Test
+    void unCreeperMuertoNoPuedeExplotarDosVeces() {
+        Long creeperId = entidadRepository.save(new Creeper()).getId();
+        Long zombieId = entidadRepository.save(new Zombie("Zombie", 30)).getId();
+        ExplosionRequest peticion = new ExplosionRequest(
+                creeperId, false,
+                List.of(new VictimaRequest(zombieId, 1.0)));
+
+        service.simularExplosion(peticion);
+
+        assertThrows(EstadoInvalidoException.class,
+                () -> service.simularExplosion(peticion));
+    }
+
+    @Test
+    void unCreeperQueYaEstaMuertoNoPuedeExplotar() {
+        Creeper creeper = new Creeper();
+        creeper.morir();
+        Long creeperId = entidadRepository.save(creeper).getId();
+        Long zombieId = entidadRepository.save(new Zombie("Zombie", 30)).getId();
+
+        assertThrows(EstadoInvalidoException.class,
+                () -> service.simularExplosion(new ExplosionRequest(
+                        creeperId, false,
+                        List.of(new VictimaRequest(zombieId, 0.0)))));
     }
 }

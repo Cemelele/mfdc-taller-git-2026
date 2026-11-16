@@ -6,9 +6,8 @@ import jakarta.persistence.Embeddable;
  * Clase auxiliar: el hitbox fisico de una entidad (ancho x alto).
  * Es una relacion de composicion: toda Entidad "tiene un" Hitbox.
  *
- * Se embebe en la tabla de la entidad. El constructor publico valida
- * las dimensiones; el protected vacio existe solo para que JPA pueda
- * reconstruir el valor embebido desde la fila.
+ * Se embebe en la tabla de la entidad. El protected vacio existe solo
+ * para que JPA pueda reconstruir el valor embebido desde la fila.
  */
 @Embeddable
 public class Hitbox {
@@ -22,9 +21,6 @@ public class Hitbox {
     }
 
     public Hitbox(double ancho, double alto) {
-        if (ancho <= 0 || alto <= 0) {
-            throw new IllegalArgumentException("Las dimensiones del hitbox deben ser positivas");
-        }
         this.ancho = ancho;
         this.alto = alto;
     }

@@ -12,6 +12,7 @@ import py.edu.uc.lp3.domain.Hostil;
 import py.edu.uc.lp3.exception.CreeperNoEncontradoException;
 import py.edu.uc.lp3.exception.EntidadInvalidaException;
 import py.edu.uc.lp3.exception.EntidadNoEncontradaException;
+import py.edu.uc.lp3.exception.EstadoInvalidoException;
 import py.edu.uc.lp3.exception.SimulacionInvalidaException;
 import py.edu.uc.lp3.model.ResultadoVictima;
 import py.edu.uc.lp3.model.SimulacionExplosion;
@@ -23,12 +24,15 @@ import py.edu.uc.lp3.rest.dto.SimulacionDTO.VictimaRequest;
 import py.edu.uc.lp3.rest.dto.SimulacionDTO.VictimaResultado;
 
 /**
- * Simulacion persistida de explosiones. Aplica las dos reglas del dominio
- * sobre Hostil/Zombie/Creeper, guarda el resultado y deja el estado de todos
- * los participantes en H2. Si una regla falla, @Transactional revierte todo.
+ * Simulacion persistida de explosiones. Aqui viven las reglas de dano por
+ * distancia, electrificacion y explosion que antes estaban en Creeper.
+ * Si una regla falla, @Transactional revierte todo.
  */
 @Service
 public class SimulacionService {
+
+    private static final int DANIO_BASE = 15;
+    private static final int DANIO_CARGADO = 25;
 
     private final EntidadRepository entidadRepository;
     private final SimulacionExplosionRepository simulacionRepository;
@@ -52,31 +56,30 @@ public class SimulacionService {
         }
 
         Creeper creeper = buscarCreeper(peticion.creeperId());
+        validarCreeperPuedeExplotar(creeper);
 
         if (Boolean.TRUE.equals(peticion.cargado())) {
-            creeper.recibirRayo();
+            cargarCreeper(creeper);
         }
         creeper.encender();
 
         SimulacionExplosion simulacion = new SimulacionExplosion(creeper.getId(),
                 creeper.isCargado(), creeper.isEncendido(),
-                creeper.getRadioExplosion(), creeper.danioBase());
+                creeper.getRadioExplosion(), danioBase(creeper));
 
         for (VictimaRequest victimaRequest : peticion.victimas()) {
             if (victimaRequest == null || victimaRequest.hostilId() == null) {
                 throw new SimulacionInvalidaException("Cada victima necesita un hostilId");
             }
             double distancia = victimaRequest.distancia() == null ? 0.0 : victimaRequest.distancia();
-            if (distancia < 0) {
-                throw new SimulacionInvalidaException("La distancia no puede ser negativa");
-            }
+            validarDistancia(distancia);
             if (victimaRequest.hostilId().equals(creeper.getId())) {
                 throw new SimulacionInvalidaException("El Creeper no puede ser su propia victima");
             }
             Hostil victima = buscarHostil(victimaRequest.hostilId());
 
             int vidaAntes = victima.getVida();
-            int danio = creeper.danioA(distancia);
+            int danio = danioA(creeper, distancia);
             String detalle = danio > 0
                     ? victima.recibirDanio(danio, "Creeper")
                     : "Fuera del radio de la explosion: sin dano.";
@@ -87,8 +90,8 @@ public class SimulacionService {
                     !victima.estaMuerto(), detalle));
         }
 
-        // Regla 2: la explosion destruye al Creeper, cargado o no.
-        creeper.explotar();
+        // La explosion destruye al Creeper, cargado o no.
+        creeper.morir();
         entidadRepository.save(creeper);
         simulacion.marcarCreeperDestruido();
 
@@ -107,6 +110,35 @@ public class SimulacionService {
         }
         return simulacionRepository.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(id));
+    }
+
+    private void validarCreeperPuedeExplotar(Creeper creeper) {
+        if (creeper.estaMuerto()) {
+            throw new EstadoInvalidoException("El Creeper " + creeper.getId()
+                    + " ya esta muerto (vida <= 0) o ya exploto: no puede explotar otra vez");
+        }
+    }
+
+    private void validarDistancia(double distancia) {
+        if (Double.isNaN(distancia) || Double.isInfinite(distancia) || distancia < 0) {
+            throw new SimulacionInvalidaException("La distancia no puede ser negativa");
+        }
+    }
+
+    private void cargarCreeper(Creeper creeper) {
+        creeper.cargar();
+    }
+
+    private int danioBase(Creeper creeper) {
+        return creeper.isCargado() ? DANIO_CARGADO : DANIO_BASE;
+    }
+
+    private int danioA(Creeper creeper, double distancia) {
+        double radio = creeper.getRadioExplosion();
+        if (radio <= 0 || distancia >= radio) {
+            return 0;
+        }
+        return (int) Math.round(danioBase(creeper) * (1 - distancia / radio));
     }
 
     private ExplosionResultado mapear(SimulacionExplosion simulacion) {

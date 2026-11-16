@@ -32,17 +32,11 @@ public class Jugador extends Entidad {
     }
 
     public String recoger(String item) {
-        if (item == null || item.isBlank()) {
-            throw new IllegalArgumentException("No se puede recoger un item vacio");
-        }
         inventario.add(item);
         return getNombre() + " recoge " + item + ".";
     }
 
     public String ganarExperiencia(int puntos) {
-        if (puntos < 0) {
-            throw new IllegalArgumentException("La experiencia no puede ser negativa");
-        }
         experiencia += puntos;
         return getNombre() + " gana " + puntos + " de XP (total: " + experiencia + ").";
     }

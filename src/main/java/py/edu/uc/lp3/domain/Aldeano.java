@@ -17,17 +17,11 @@ public class Aldeano extends NoHostil {
     public Aldeano(String profesion) {
         super("Aldeano", 20, new Hitbox(0.6, 1.95), "Nada",
                 "texturas/aldeano.png", "hmm", 0.2);
-        if (profesion == null || profesion.isBlank()) {
-            throw new IllegalArgumentException("El aldeano necesita una profesion");
-        }
         this.profesion = profesion;
         this.ofertas = new ArrayList<>();
     }
 
     public String agregarOferta(String oferta) {
-        if (oferta == null || oferta.isBlank()) {
-            throw new IllegalArgumentException("No se puede agregar una oferta vacia");
-        }
         ofertas.add(oferta);
         return "El aldeano (" + profesion + ") agrega la oferta: " + oferta + ".";
     }

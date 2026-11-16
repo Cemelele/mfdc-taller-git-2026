@@ -15,18 +15,23 @@ import py.edu.uc.lp3.domain.Hostil;
 import py.edu.uc.lp3.domain.Zombie;
 import py.edu.uc.lp3.exception.EntidadInvalidaException;
 import py.edu.uc.lp3.exception.EntidadNoEncontradaException;
+import py.edu.uc.lp3.exception.EstadoInvalidoException;
 import py.edu.uc.lp3.repository.EntidadRepository;
 import py.edu.uc.lp3.rest.dto.HostilDTO.HostilRequest;
 import py.edu.uc.lp3.rest.dto.HostilDTO.HostilResponse;
 
 /**
- * Capa de negocio del CRUD. Valida el cuerpo, construye la hija concreta
- * (Zombie o Creeper), aplica los mensajes del dominio y persiste.
+ * Capa de negocio del CRUD. Concentra todas las validaciones de datos y
+ * las reglas de ciclo de vida: el dominio solo muta su estado.
  */
 @Service
 public class HostilService {
 
     private static final int VIDA_POR_DEFECTO = 20;
+    private static final String AVISO_RAYO_CREEPER =
+            "El Creeper sisea mas fuerte mientras el rayo lo carga.";
+    private static final String RAYO_CREEPER =
+            "Creeper cargado por un rayo: ahora explota mas fuerte.";
 
     private final EntidadRepository repository;
 
@@ -60,34 +65,36 @@ public class HostilService {
     @Transactional
     public HostilResponse actualizarParcial(Long id, HostilRequest peticion) {
         Hostil hostil = buscarEntidad(id);
+        validarEstadoVivo(hostil);
         if (peticion == null) {
             throw new EntidadInvalidaException("El cuerpo de la actualizacion no puede estar vacio");
         }
         validarTipoInmutable(hostil, peticion.tipo());
-        try {
-            if (peticion.nombre() != null) {
-                hostil.renombrar(peticion.nombre());
-            }
-            if (peticion.vida() != null) {
-                hostil.ajustarVida(peticion.vida());
-            }
-            if (peticion.velocidad() != null) {
-                hostil.cambiarVelocidad(peticion.velocidad());
-            }
-            if (peticion.rangoAggro() != null) {
-                hostil.cambiarRangoAggro(peticion.rangoAggro());
-            }
-            if (peticion.danioAtaque() != null) {
-                hostil.cambiarDanioAtaque(peticion.danioAtaque());
-            }
-            if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
-                creeper.recibirRayo();
-            }
-            if (Boolean.TRUE.equals(peticion.encendido()) && hostil instanceof Creeper creeper) {
-                creeper.encender();
-            }
-        } catch (IllegalArgumentException e) {
-            throw new EntidadInvalidaException(e.getMessage());
+        if (peticion.nombre() != null) {
+            validarNombre(peticion.nombre(), "El nombre no puede estar vacio");
+            hostil.renombrar(peticion.nombre().trim());
+        }
+        if (peticion.vida() != null) {
+            validarVida(peticion.vida(), "La vida debe ser mayor a 0");
+            hostil.ajustarVida(peticion.vida());
+        }
+        if (peticion.velocidad() != null) {
+            validarVelocidad(peticion.velocidad());
+            hostil.cambiarVelocidad(peticion.velocidad());
+        }
+        if (peticion.rangoAggro() != null) {
+            validarRangoAggro(peticion.rangoAggro());
+            hostil.cambiarRangoAggro(peticion.rangoAggro());
+        }
+        if (peticion.danioAtaque() != null) {
+            validarDanioAtaque(peticion.danioAtaque());
+            hostil.cambiarDanioAtaque(peticion.danioAtaque());
+        }
+        if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
+            cargarCreeper(creeper);
+        }
+        if (Boolean.TRUE.equals(peticion.encendido()) && hostil instanceof Creeper creeper) {
+            creeper.encender();
         }
         return HostilResponse.desde(repository.save(hostil));
     }
@@ -95,6 +102,7 @@ public class HostilService {
     @Transactional
     public HostilResponse actualizarTotal(Long id, HostilRequest peticion) {
         Hostil hostil = buscarEntidad(id);
+        validarEstadoVivo(hostil);
         if (peticion == null) {
             throw new EntidadInvalidaException("El cuerpo de la actualizacion no puede estar vacio");
         }
@@ -107,25 +115,31 @@ public class HostilService {
         if (peticion.velocidad() == null) {
             throw new EntidadInvalidaException("PUT reemplaza el recurso: falta la velocidad");
         }
+        validarNombre(peticion.nombre(), "El nombre no puede estar vacio");
+        validarVida(peticion.vida(), "La vida debe ser mayor a 0");
+        validarVelocidad(peticion.velocidad());
+        if (peticion.rangoAggro() != null) {
+            validarRangoAggro(peticion.rangoAggro());
+        }
+        if (peticion.danioAtaque() != null) {
+            validarDanioAtaque(peticion.danioAtaque());
+        }
         validarTipoInmutable(hostil, peticion.tipo());
-        try {
-            hostil.renombrar(peticion.nombre());
-            hostil.ajustarVida(peticion.vida());
-            hostil.cambiarVelocidad(peticion.velocidad());
-            if (peticion.rangoAggro() != null) {
-                hostil.cambiarRangoAggro(peticion.rangoAggro());
-            }
-            if (peticion.danioAtaque() != null) {
-                hostil.cambiarDanioAtaque(peticion.danioAtaque());
-            }
-            if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
-                creeper.recibirRayo();
-            }
-            if (Boolean.TRUE.equals(peticion.encendido()) && hostil instanceof Creeper creeper) {
-                creeper.encender();
-            }
-        } catch (IllegalArgumentException e) {
-            throw new EntidadInvalidaException(e.getMessage());
+
+        hostil.renombrar(peticion.nombre().trim());
+        hostil.ajustarVida(peticion.vida());
+        hostil.cambiarVelocidad(peticion.velocidad());
+        if (peticion.rangoAggro() != null) {
+            hostil.cambiarRangoAggro(peticion.rangoAggro());
+        }
+        if (peticion.danioAtaque() != null) {
+            hostil.cambiarDanioAtaque(peticion.danioAtaque());
+        }
+        if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
+            cargarCreeper(creeper);
+        }
+        if (Boolean.TRUE.equals(peticion.encendido()) && hostil instanceof Creeper creeper) {
+            creeper.encender();
         }
         return HostilResponse.desde(repository.save(hostil));
     }
@@ -137,20 +151,25 @@ public class HostilService {
 
     /**
      * Endpoint que habla por el tipo de la interfaz Electrificable, no por
-     * la clase concreta. Solo el Creeper de la familia persistida la implementa.
+     * la clase concreta. La electrificacion del Creeper se resuelve aqui,
+     * en el service, y no en la capa de dominio.
      */
     @Transactional
     public Map<String, Object> recibirRayo(Long id) {
         Hostil hostil = buscarEntidad(id);
-        if (!(hostil instanceof Electrificable electrificable)) {
-            throw new EntidadInvalidaException(
-                    tipoDe(hostil) + " no implementa Electrificable en esta familia persistida");
-        }
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("hostilId", hostil.getId());
         json.put("tipo", tipoDe(hostil));
-        json.put("avisoRayo", electrificable.avisoRayo());
-        json.put("recibirRayo", electrificable.recibirRayo());
+        if (hostil instanceof Creeper creeper) {
+            json.put("avisoRayo", AVISO_RAYO_CREEPER);
+            json.put("recibirRayo", cargarCreeper(creeper));
+        } else if (hostil instanceof Electrificable electrificable) {
+            json.put("avisoRayo", electrificable.avisoRayo());
+            json.put("recibirRayo", electrificable.recibirRayo());
+        } else {
+            throw new EntidadInvalidaException(
+                    tipoDe(hostil) + " no implementa Electrificable en esta familia persistida");
+        }
         repository.save(hostil);
         return json;
     }
@@ -162,57 +181,86 @@ public class HostilService {
         String tipo = normalizarTipo(peticion.tipo());
         String nombre = peticion.nombre();
         if (nombre != null) {
-            if (nombre.isBlank()) {
-                throw new EntidadInvalidaException("El nombre no puede estar vacio");
-            }
+            validarNombre(nombre, "El nombre no puede estar vacio");
             nombre = nombre.trim();
         }
         int vida = peticion.vida() == null ? VIDA_POR_DEFECTO : peticion.vida();
-        if (vida <= 0) {
-            throw new EntidadInvalidaException("La vida debe ser mayor a 0");
+        validarVida(vida, "La vida debe ser mayor a 0");
+        if (peticion.velocidad() != null) {
+            validarVelocidad(peticion.velocidad());
         }
-        if (peticion.velocidad() != null && peticion.velocidad() < 0) {
+        if (peticion.rangoAggro() != null) {
+            validarRangoAggro(peticion.rangoAggro());
+        }
+        if (peticion.danioAtaque() != null) {
+            validarDanioAtaque(peticion.danioAtaque());
+        }
+
+        Hostil hostil = switch (tipo) {
+            case "zombie" -> nombre == null
+                    ? new Zombie(vida)
+                    : new Zombie(nombre, vida);
+            case "creeper" -> new Creeper(nombre == null ? "Creeper" : nombre, vida);
+            default -> throw new EntidadInvalidaException(
+                    "Tipo invalido: " + peticion.tipo() + ". Validos: zombie, creeper");
+        };
+        if (peticion.velocidad() != null) {
+            hostil.cambiarVelocidad(peticion.velocidad());
+        }
+        if (peticion.rangoAggro() != null) {
+            hostil.cambiarRangoAggro(peticion.rangoAggro());
+        }
+        if (peticion.danioAtaque() != null) {
+            hostil.cambiarDanioAtaque(peticion.danioAtaque());
+        }
+        if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
+            cargarCreeper(creeper);
+        }
+        if (Boolean.TRUE.equals(peticion.encendido()) && hostil instanceof Creeper creeper) {
+            creeper.encender();
+        }
+        return hostil;
+    }
+
+    private String cargarCreeper(Creeper creeper) {
+        creeper.cargar();
+        return RAYO_CREEPER;
+    }
+
+    private void validarEstadoVivo(Hostil hostil) {
+        if (hostil.estaMuerto()) {
+            throw new EstadoInvalidoException("La entidad " + hostil.getId()
+                    + " esta muerta (vida <= 0) y no puede revivir ni modificarse");
+        }
+    }
+
+    private void validarNombre(String nombre, String mensaje) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new EntidadInvalidaException(mensaje);
+        }
+    }
+
+    private void validarVida(int vida, String mensaje) {
+        if (vida <= 0) {
+            throw new EntidadInvalidaException(mensaje);
+        }
+    }
+
+    private void validarVelocidad(double velocidad) {
+        if (velocidad < 0) {
             throw new EntidadInvalidaException("La velocidad no puede ser negativa");
         }
-        if (peticion.rangoAggro() != null && peticion.rangoAggro() <= 0) {
+    }
+
+    private void validarRangoAggro(double rangoAggro) {
+        if (rangoAggro <= 0) {
             throw new EntidadInvalidaException("El rango de aggro debe ser positivo");
         }
-        if (peticion.danioAtaque() != null && peticion.danioAtaque() <= 0) {
+    }
+
+    private void validarDanioAtaque(int danioAtaque) {
+        if (danioAtaque <= 0) {
             throw new EntidadInvalidaException("El dano de ataque debe ser positivo");
-        }
-        try {
-            Hostil hostil = switch (tipo) {
-                case "zombie" -> nombre == null
-                        ? new Zombie(vida)
-                        : new Zombie(nombre, vida);
-                case "creeper" -> new Creeper();
-                default -> throw new EntidadInvalidaException(
-                        "Tipo invalido: " + peticion.tipo() + ". Validos: zombie, creeper");
-            };
-            if (tipo.equals("creeper")) {
-                if (nombre != null) {
-                    hostil.renombrar(nombre);
-                }
-                hostil.ajustarVida(vida);
-            }
-            if (peticion.velocidad() != null) {
-                hostil.cambiarVelocidad(peticion.velocidad());
-            }
-            if (peticion.rangoAggro() != null) {
-                hostil.cambiarRangoAggro(peticion.rangoAggro());
-            }
-            if (peticion.danioAtaque() != null) {
-                hostil.cambiarDanioAtaque(peticion.danioAtaque());
-            }
-            if (Boolean.TRUE.equals(peticion.cargado()) && hostil instanceof Creeper creeper) {
-                creeper.recibirRayo();
-            }
-            if (Boolean.TRUE.equals(peticion.encendido()) && hostil instanceof Creeper creeper) {
-                creeper.encender();
-            }
-            return hostil;
-        } catch (IllegalArgumentException e) {
-            throw new EntidadInvalidaException(e.getMessage());
         }
     }
 

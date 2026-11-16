@@ -2,7 +2,6 @@ package py.edu.uc.lp3.domain;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -87,25 +86,10 @@ public abstract class Entidad implements UICapable {
 
     protected Entidad(String nombre, int vida, Hitbox hitboxFisico, String drop,
                       String imagen, String sonido, double velocidad) {
-        if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("La entidad necesita un nombre");
-        }
-        if (vida <= 0) {
-            throw new IllegalArgumentException("La vida inicial de " + nombre + " debe ser positiva");
-        }
-        if (imagen == null || imagen.isBlank()) {
-            throw new IllegalArgumentException("La entidad necesita una imagen");
-        }
-        if (sonido == null || sonido.isBlank()) {
-            throw new IllegalArgumentException("La entidad necesita un sonido");
-        }
-        if (velocidad < 0) {
-            throw new IllegalArgumentException("La velocidad no puede ser negativa");
-        }
         this.nombre = nombre;
         this.vida = vida;
-        this.hitboxFisico = Objects.requireNonNull(hitboxFisico, "la entidad necesita un hitbox");
-        this.drop = Objects.requireNonNull(drop, "la entidad necesita un drop");
+        this.hitboxFisico = hitboxFisico;
+        this.drop = drop;
         this.imagen = imagen;
         this.sonido = sonido;
         this.velocidad = velocidad;
@@ -151,12 +135,6 @@ public abstract class Entidad implements UICapable {
     }
 
     public String avanzar(double distancia) {
-        if (distancia < 0) {
-            throw new IllegalArgumentException("La distancia no puede ser negativa");
-        }
-        if (estaMuerto()) {
-            return nombre + " ya murio, no puede avanzar.";
-        }
         double rad = Math.toRadians(rotacion);
         x += distancia * Math.cos(rad);
         z += distancia * Math.sin(rad);
@@ -164,17 +142,11 @@ public abstract class Entidad implements UICapable {
     }
 
     public String rotar(double grados) {
-        if (estaMuerto()) {
-            return nombre + " ya murio, no puede rotar.";
-        }
         rotacion = (rotacion + grados) % 360;
         return nombre + " rota hacia " + (int) rotacion + " grados.";
     }
 
     public String saltar() {
-        if (estaMuerto()) {
-            return nombre + " ya murio, no puede saltar.";
-        }
         if (enElAire) {
             return nombre + " ya esta en el aire.";
         }
@@ -204,23 +176,13 @@ public abstract class Entidad implements UICapable {
 
     /**
      * SOBRECARGA: mismo mensaje "recibirDanio", otra lista de argumentos.
-     * Ademas de los puntos, indica quien ataca. Valida el atacante antes
-     * de tocar la vida, asi un valor ilegal no deja el objeto a medias.
+     * Ademas de los puntos, indica quien ataca.
      */
     public String recibirDanio(int puntos, String atacante) {
-        if (atacante == null || atacante.isBlank()) {
-            throw new IllegalArgumentException("El atacante no puede estar vacio");
-        }
         return atacante + " ataca a " + nombre + ". " + recibirDanio(puntos);
     }
 
     public String recibirDanio(int puntos) {
-        if (puntos < 0) {
-            throw new IllegalArgumentException("El dano no puede ser negativo");
-        }
-        if (estaMuerto()) {
-            return nombre + " ya murio, no puede recibir dano.";
-        }
         vida = Math.max(0, vida - puntos);
         String resultado = nombre + " recibe " + puntos + " de dano" + reproducirSonido("hurt");
         if (estaMuerto()) {
@@ -233,12 +195,8 @@ public abstract class Entidad implements UICapable {
         return vida <= 0;
     }
 
-    /**
-     * Mata a la entidad. Es protected porque solo la jerarquia decide
-     * cuando una entidad muere sin recibir dano (por ejemplo, el Creeper
-     * al explotar se lleva a si mismo por delante).
-     */
-    protected String morir() {
+    /** Mata a la entidad: muta la vida a cero y devuelve el mensaje. */
+    public String morir() {
         vida = 0;
         return nombre + " muere y suelta: " + drop;
     }
@@ -250,28 +208,19 @@ public abstract class Entidad implements UICapable {
         return " y suena: " + sonido;
     }
 
-    // ---- Mensajes de actualizacion: cambian estado con validacion ----
+    // ---- Mensajes de actualizacion: mutan el estado ----
 
     public String renombrar(String nuevoNombre) {
-        if (nuevoNombre == null || nuevoNombre.isBlank()) {
-            throw new IllegalArgumentException("La entidad necesita un nombre");
-        }
         this.nombre = nuevoNombre;
         return "La entidad ahora se llama " + nuevoNombre + ".";
     }
 
     public String ajustarVida(int nuevaVida) {
-        if (nuevaVida <= 0) {
-            throw new IllegalArgumentException("La vida debe ser positiva");
-        }
         this.vida = nuevaVida;
         return nombre + " ajusta su vida a " + nuevaVida + ".";
     }
 
     public String cambiarVelocidad(double nuevaVelocidad) {
-        if (nuevaVelocidad < 0) {
-            throw new IllegalArgumentException("La velocidad no puede ser negativa");
-        }
         this.velocidad = nuevaVelocidad;
         return nombre + " cambia su velocidad a " + nuevaVelocidad + ".";
     }

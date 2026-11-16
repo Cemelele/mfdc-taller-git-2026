@@ -3,6 +3,7 @@ package py.edu.uc.lp3.rest.controller;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -13,12 +14,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import py.edu.uc.lp3.domain.Creeper;
+import py.edu.uc.lp3.domain.Zombie;
+import py.edu.uc.lp3.repository.EntidadRepository;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 class ManejadorExcepcionesTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private EntidadRepository entidadRepository;
 
     @Test
     void unaEntidadInexistenteDevuelve404ConJSONEstructurado() throws Exception {
@@ -85,5 +93,52 @@ class ManejadorExcepcionesTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.tipo").value("SimulacionInvalidaException"))
                 .andExpect(jsonPath("$.mensaje").value(containsString("victima")));
+    }
+
+    @Test
+    void revivirUnMobMuertoDevuelve409Conflict() throws Exception {
+        Long id = entidadRepository.save(new Creeper("Muerto", 0)).getId();
+        String cuerpo = """
+                {
+                  "tipo": "creeper",
+                  "nombre": "Nuevo",
+                  "vida": 20,
+                  "velocidad": 0.2
+                }
+                """;
+
+        mvc.perform(put("/api/hostiles/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cuerpo))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.tipo").value("EstadoInvalidoException"))
+                .andExpect(jsonPath("$.mensaje").value(containsString("muerta")));
+    }
+
+    @Test
+    void explotarDosVecesUnCreeperMuertoDevuelve409Conflict() throws Exception {
+        Long creeperId = entidadRepository.save(new Creeper("Boom", 20)).getId();
+        Long zombieId = entidadRepository.save(new Zombie("Victima", 30)).getId();
+        String cuerpo = """
+                {
+                  "creeperId": %d,
+                  "victimas": [ { "hostilId": %d, "distancia": 0.0 } ]
+                }
+                """.formatted(creeperId, zombieId);
+
+        mvc.perform(post("/api/simulaciones/explosion")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cuerpo))
+                .andExpect(status().isCreated());
+
+        mvc.perform(post("/api/simulaciones/explosion")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cuerpo))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.tipo").value("EstadoInvalidoException"))
+                .andExpect(jsonPath("$.mensaje").value(containsString("explotar")));
     }
 }

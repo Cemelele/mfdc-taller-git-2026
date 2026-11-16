@@ -55,6 +55,9 @@ public class EntidadController {
                                      @RequestParam(defaultValue = "") String item,
                                      @RequestParam(defaultValue = "2.0") double distancia,
                                      @RequestParam(defaultValue = "0") int vida) {
+        if (danio < 0) {
+            throw new IllegalArgumentException("El dano no puede ser negativo");
+        }
         Entidad entidad = crearEntidad(tipo, profesion, vida);
         Jugador objetivo = jugador.isBlank() ? new Jugador() : new Jugador(jugador);
         if (!item.isBlank()) {
