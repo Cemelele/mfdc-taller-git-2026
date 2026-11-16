@@ -212,3 +212,47 @@ Instrucción dada al agente: "Implementa el Paso 4 del taller estructurando la g
 ### Problemas que resolví
 
 - Prevención de respuestas de error genéricas o no controladas en el servidor, estableciendo un contrato de respuestas limpia y predecible en formato JSON para el cliente HTTP.
+
+
+## Septima sesión: Mover validaciones y reglas al Service + arreglar ciclo de vida
+
+| Dato | Valor |
+|---|---|
+| **Marca / agente** | OpenCode (asistente de código en terminal) |
+| **Modelo LLM exacto** | `DeepSeek v4.1 Flash 1017` |
+| **Fecha** | 15 de noviembre de 2026 |
+
+### Prompt usado
+
+Necesito refactorizar la arquitectura y las invariantes de ciclo de vida del proyecto POO-08 para cumplir estrictamente con estas reglas:
+
+1. CAPA DE DOMINIO PURA (paquete py.edu.uc.lp3.domain):
+- Elimina todos los `throw new IllegalArgumentException(...)` de `Entidad`, `Hostil`, `Creeper`, `Aldeano`, `Enderman`, `Jugador` y `Hitbox`. Las clases del dominio NO deben lanzar excepciones ni contener reglas de negocio; solo deben conservar sus atributos privados, constructores y métodos simples para mutar su estado (`renombrar`, `ajustarVida`, `cambiarVelocidad`, etc.).
+- Agrega en `Creeper` un constructor `public Creeper(String nombre, int vida)` que delegue en `super(...)`, y úsalo en `HostilService` al crear un Creeper.
+- Extrae la lógica de cálculo de daño por distancia (`danioA`), electrificación (`recibirRayo`) y explosión (`explotar`) desde `Creeper` hacia `HostilService` y `SimulacionService`.
+
+2. INVARIANTES DE CICLO DE VIDA Y HTTP 409 CONFLICT (en Services y ManejadorExcepciones):
+- Crea una excepción de dominio (por ejemplo `EstadoInvalidoException extends HostilDomainException` o maneja el conflicto en `ManejadorExcepciones`) mapeada a HTTP `409 Conflict`.
+- En `HostilService`: mueve todas las validaciones de datos (nombre no vacío, vida válida, etc.) lanzando `EntidadInvalidaException` (400). Además, implementa la regla de ciclo de vida: una entidad muerta (`vida <= 0`) NO puede revivir. Si se intenta hacer `PUT`, `PATCH` o modificar la vida de una entidad con `vida <= 0`, lanza la excepción que devuelve `409 Conflict`.
+- En `SimulacionService`: valida distancia >= 0 y parámetros válidos lanzando `SimulacionInvalidaException` (400). Además, verifica que el Creeper tenga `vida > 0` y no haya explotado previamente; si el Creeper ya está muerto (`vida <= 0`) o ya explotó, rechaza la simulación lanzando la excepción que devuelve `409 Conflict`.
+
+3. TESTS:
+- Actualiza los tests unitarios y de integración existentes para que reflejen que las validaciones viven en los services y agrega tests nuevos verificando que: (a) intentar revivir un mob con vida 0 devuelve 409, y (b) intentar explotar dos veces un Creeper muerto devuelve 409.
+- Ejecuta `./mvnw test` y asegúrate de que todos los tests pasen al 100%.
+
+### Qué generó el agente
+
+Refactorización completada:
+- Dominio puro: eliminados todos los throw new IllegalArgumentException de las clases indicadas y de Hitbox; ahora solo mutan estado.
+- Creeper: agregado Creeper(String nombre, int vida) y usado por HostilService; lógica de daño/explosión movida a SimulacionService.
+- Nuevo EstadoInvalidoException mapeado a 409 Conflict.
+- HostilService: validaciones con EntidadInvalidaException y bloqueo de resurrección en PUT/PATCH.
+- SimulacionService: validación de distancia/parámetros y rechazo de Creeper muerto o ya explotado.
+- Tests actualizados y agregados para ambos casos 409.
+
+### Qué corregí o decidí yo
+
+* **Separación estricta entre Dominio y Servicio:** Inicialmente la IA había colocado validaciones (`IllegalArgumentException`) y cálculos de explosión dentro de las entidades (`Entidad`, `Creeper`, etc.). Decidí limpiar la capa `domain` para que las entidades funcionen únicamente como contenedores de estado, moviendo todas las validaciones de datos y reglas del juego hacia `HostilService` y `SimulacionService`.
+* **Invariantes del ciclo de vida (muerte irreversible):** Al revisar el comportamiento de la API, corregí un fallo de lógica donde un mob con `vida = 0` podía ser editado mediante `PUT`/`PATCH` para revivir, o un `Creeper` ya explotado podía volver a detonar. Implementé controles en los servicios para que el estado muerto sea irreversible y se responda con `409 Conflict` ante cualquier intento de revivir una entidad o reutilizar un Creeper consumido.
+* **Constructor completo en `Creeper`:** Agregué el constructor `Creeper(String nombre, int vida)` delegando con `super(...)` para que la instancia nazca directamente con sus valores iniciales en lugar de crearse con valores por defecto y modificarse después.
+* **Consistencia en la documentación y entorno H2:** Alineé `README.md` y `ESPECIFICACIONES-POO-08.md` con la configuración real de `application.properties`, dejando explícito que H2 persiste en disco (`jdbc:h2:file:./data/entidades-db`) y no solo en memoria, además de actualizar el diagrama de arquitectura con los servicios, repositorios y excepciones reales del proyecto.
