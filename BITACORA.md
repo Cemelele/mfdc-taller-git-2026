@@ -1,8 +1,13 @@
 # Bitácora de uso de inteligencia artificial
 
-Ejercicio **POO-06** — Revisión, paquetes, constructores y sobrecarga
+Ejercicio **POO-08** — Arquitectura en capas, persistencia, reglas de negocio
+e invariantes de ciclo de vida
 Repositorio: `Cemelele/mfdc-taller-git-2026`
 Dominio: **Minecraft**
+
+> Esta bitácora conserva el historial de las sesiones de trabajo. Las primeras
+> sesiones documentan las etapas previas (POO-06, CRUD y simulación); el estado
+> final del repositorio corresponde a POO-08.
 
 ## Herramienta y modelo
 
@@ -52,7 +57,7 @@ Los prompts fueron en español y, en frases propias, fueron estos:
 | Dato                  | Valor                                      |
 |-----------------------|--------------------------------------------|
 | **Marca / agente**    | OpenCode (asistente de código en terminal) |
-| **Modelo LLM exacto** | (completar con el modelo usado ese día)    |
+| **Modelo LLM exacto** | `deepseek/deepseek-flash`                  |
 | **Fecha**             | 28 de octubre de 2026                      |
 
 ### Prompt usado
@@ -89,9 +94,9 @@ terminar el prompt, por lo que completé y revisé el resto a mano.
 
 ## Uso declarado
 
-Se usó IA (OpenCode con el modelo `opencode/big-pickle`) para este trabajo.
-El código fue revisado y probado antes de commitearlo; la defensa en sala es
-responsabilidad del alumno.
+Se usó IA (OpenCode) para este trabajo; el modelo exacto de cada sesión figura
+en las tablas anteriores. El código fue revisado y probado antes de
+commitearlo; la defensa en sala es responsabilidad del alumno.
 
 ## Tercera sesión: Dominio JPA con herencia (Minecraft)
 
@@ -256,3 +261,66 @@ Refactorización completada:
 * **Invariantes del ciclo de vida (muerte irreversible):** Al revisar el comportamiento de la API, corregí un fallo de lógica donde un mob con `vida = 0` podía ser editado mediante `PUT`/`PATCH` para revivir, o un `Creeper` ya explotado podía volver a detonar. Implementé controles en los servicios para que el estado muerto sea irreversible y se responda con `409 Conflict` ante cualquier intento de revivir una entidad o reutilizar un Creeper consumido.
 * **Constructor completo en `Creeper`:** Agregué el constructor `Creeper(String nombre, int vida)` delegando con `super(...)` para que la instancia nazca directamente con sus valores iniciales en lugar de crearse con valores por defecto y modificarse después.
 * **Consistencia en la documentación y entorno H2:** Alineé `README.md` y `ESPECIFICACIONES-POO-08.md` con la configuración real de `application.properties`, dejando explícito que H2 persiste en disco (`jdbc:h2:file:./data/entidades-db`) y no solo en memoria, además de actualizar el diagrama de arquitectura con los servicios, repositorios y excepciones reales del proyecto.
+
+## Octava sesión: Alineación integral de documentación y cierre de POO-08
+
+| Dato | Valor |
+|---|---|
+| **Marca / agente** | OpenCode (asistente de código en terminal) |
+| **Modelo LLM exacto** | `deepseek/deepseek-flash` |
+| **Fecha** | 15 de noviembre de 2026 |
+
+### Prompt usado
+
+Revisar `application.properties`, `pom.xml`, las clases de `domain`,
+`repository`, `service`, `rest.controller` y `exception`, y actualizar
+completamente `README.md`, `ESPECIFICACIONES-POO-08.md` y `BITACORA.md` para
+que coincidan con el estado real de POO-08: documentar cada propiedad de H2 y
+JPA, actualizar el diagrama Mermaid con repositorios, services, controllers y
+la jerarquía completa de excepciones, explicar las reglas del juego, responder
+las preguntas de “Qué hay que pensar”, documentar la importación de Insomnia,
+actualizar la cantidad de tests, corregir la URL de H2, agregar el caso
+`409 Conflict` a la tabla de excepciones y limpiar el archivo duplicado de
+Insomnia de la raíz.
+
+### Qué generó el agente
+
+- Revisó la configuración real de `application.properties`, las dependencias de
+  `pom.xml` y el código de las capas de dominio, persistencia, negocio, HTTP y
+  excepciones.
+- Reemplazó la presentación de POO-06 del README por la entrega POO-08, con la
+  estructura actual de paquetes, los endpoints del CRUD y de simulación, las
+  dos reglas del juego y el diagrama de arquitectura completo.
+- Incorporó la tabla explicativa de cada propiedad de H2/JPA, la URL de
+  persistencia en archivo `jdbc:h2:file:./data/entidades-db` y los enlaces a la
+  rama principal.
+- Renombró las especificaciones a `docs/ESPECIFICACIONES-POO-08.md`, corrigió
+  la URL de H2, agregó `EstadoInvalidoException` y el código `409 Conflict` a
+  la tabla de errores, y alineó los tests con el estado actual.
+- Eliminó `insomnia_crud_hostil.json` de la raíz y mantuvo la colección en
+  `docs/insomnia/insomnia_crud_hostil.json`.
+- Agregó las instrucciones de importación y ejecución de la colección en
+  Insomnia y documentó la suite final de **44 tests con 0 fallos**.
+
+### Qué corregí o decidí yo
+
+- Verifiqué que las validaciones y las invariantes de ciclo de vida descritas
+  en la documentación coincidan con los services: las entidades muertas no
+  reviven, los Creeper ya explotados no vuelven a detonar y los errores de
+  estado se traducen a `409 Conflict`.
+- Confirmé que la configuración documentada corresponde a H2 en archivo y no a
+  una base en memoria, y que la consola `/h2-console` queda disponible para
+  inspeccionar las tablas en desarrollo.
+- Revisé que la colección de Insomnia quede únicamente en la ruta
+  `docs/insomnia/` y que los enlaces de la documentación apunten a la rama
+  principal del repositorio.
+
+### Problemas que resolví
+
+- La documentación anterior mezclaba referencias de POO-06 con el estado real
+  de POO-08 y describía validaciones que ya se habían movido al service; se
+  reescribieron las secciones afectadas para evitar contradicciones.
+- El archivo de Insomnia estaba duplicado en la raíz y en `docs/insomnia/`; se
+  conservó una sola ubicación para evitar versiones divergentes.
+- La tabla de excepciones no contemplaba los conflictos de estado; se agregó
+  `409 Conflict` con los casos de entidad muerta y Creeper ya explotado.

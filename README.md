@@ -1,109 +1,136 @@
-# mfdc-taller-git-2026
+# mfdc-taller-git-2026 — POO-08
 
-Servicio HTTP (Spring Boot) con el modelado de **Minecraft** para el ejercicio
-POO-06 — *Revisión, paquetes, constructores y sobrecarga*,
-Lenguaje de Programación 3 (CYT646).
+Servicio HTTP con **Spring Boot** sobre el dominio de **Minecraft** para el
+ejercicio **POO-08 — Arquitectura en capas, persistencia, reglas de negocio e
+invariantes de ciclo de vida**, de Lenguaje de Programación 3 (CYT646).
 
 - **Alumno:** MFDC
 - **Usuario de GitHub:** [Cemelele](https://github.com/Cemelele)
 - **Comisión:** CYT646 F — trabajo individual
+- **Repositorio:** <https://github.com/Cemelele/mfdc-taller-git-2026/tree/main>
 - **Guía del taller:** [docs/TALLER_GIT.md](docs/TALLER_GIT.md)
-- **Especificaciones aplicadas a este dominio:** [docs/ESPECIFICACIONES-POO-06.md](docs/ESPECIFICACIONES-POO-06.md)
+- **Especificaciones del dominio:** [docs/ESPECIFICACIONES-POO-08.md](docs/ESPECIFICACIONES-POO-08.md)
 - **Bitácora de uso de IA:** [BITACORA.md](BITACORA.md)
+- **Colección de Insomnia:** [docs/insomnia/insomnia_crud_hostil.json](docs/insomnia/insomnia_crud_hostil.json)
 
-## Commit de la solución
+## Estado actual de la entrega
 
-Código, tests y documentación de la entrega:
-<https://github.com/Cemelele/mfdc-taller-git-2026/commit/b42ec31dd0133acf0f5fa062203fec8141e0aeea>
+- El paquete `py.edu.uc.lp3.domain` es una capa de dominio **pura**: las
+  entidades solo guardan estado y lo mutan con métodos simples; no lanzan
+  excepciones ni contienen validaciones.
+- Las validaciones de datos, las reglas del juego y las invariantes de ciclo
+  de vida viven en `HostilService` y `SimulacionService`.
+- La persistencia usa **H2 en archivo** (`jdbc:h2:file:./data/entidades-db`) y
+  Spring Data JPA con herencia `JOINED` y columna discriminadora `tipo`.
+- La API responde con un JSON uniforme para errores **400**, **404** y
+  **409 Conflict**.
+- La suite actual ejecuta **44 tests** con `./mvnw test`.
 
-## Licencia
+## Enlace de la solución
 
-[Apache License 2.0](LICENSE): se puede usar, modificar y distribuir (incluso
-comercialmente) acreditando el origen y sin garantías.
+Código, tests y documentación de la rama principal:
 
-## Cómo levantar el servicio
+<https://github.com/Cemelele/mfdc-taller-git-2026/tree/main>
 
-Requisitos: JDK 21.
+## Requisitos y ejecución
+
+Requisitos: **JDK 21**.
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-Queda en `http://localhost:8080`. Para detenerlo: `Ctrl+C`.
+El servicio queda en `http://localhost:8080`. Para detenerlo: `Ctrl+C`.
 
-## Endpoints
+La consola web de H2 queda disponible en `http://localhost:8080/h2-console`
+con la URL JDBC `jdbc:h2:file:./data/entidades-db`, usuario `sa` y contraseña
+vacía.
 
-| Método y ruta | Controller | Qué hace |
-|---|---|---|
-| `GET /` | `IndexController` | Confirma que el servicio está vivo |
-| `GET /entidad/{tipo}` | `EntidadController` | Construye la entidad desde la URL y responde JSON |
-| `GET /entidades` | `EntidadController` | Lista todas las entidades, cada una con su comportamiento |
-| `GET /rayo/{tipo}` | `EntidadController` | Pide el mensaje por la interfaz `Electrificable` y responde JSON |
-| `GET /ui/{tipo}` | `EntidadController` | Datos de dibujo por la interfaz `UICapable`: imagen, posición, sonido y velocidad |
+## Configuración de H2 y JPA
 
-Tipos válidos: `creeper`, `zombie`, `esqueleto`, `enderman`, `cerdo`, `aldeano`.
-En `/rayo/{tipo}` solo hay dos: `creeper` (Hostil) y `cerdo` (NoHostil).
+Toda la configuración está en `src/main/resources/application.properties`.
+Cada propiedad cumple una función concreta:
 
-Parámetros de `GET /entidad/{tipo}`:
+| Propiedad | Qué hace |
+|---|---|
+| `spring.application.name=mfdc-taller-git-2026` | Define el nombre lógico de la aplicación Spring Boot que aparece en logs y en la consola de administración. |
+| `spring.datasource.url=jdbc:h2:file:./data/entidades-db` | Configura H2 con **persistencia en archivo** dentro de `./data/entidades-db`, por lo que los datos sobreviven al reinicio. |
+| `spring.datasource.driverClassName=org.h2.Driver` | Indica el driver JDBC de H2 que usa el pool de conexiones. |
+| `spring.datasource.username=sa` | Establece el usuario de conexión a la base H2. |
+| `spring.datasource.password=` | Deja la contraseña vacía, válida para el entorno local de desarrollo. |
+| `spring.jpa.hibernate.ddl-auto=update` | Hace que Hibernate cree las tablas faltantes y actualice el esquema sin borrar las filas existentes. |
+| `spring.jpa.open-in-view=false` | Desactiva Open Session in View: la sesión de JPA se cierra al terminar la transacción del service/repository y no queda abierta durante el render HTTP. |
+| `spring.h2.console.enabled=true` | Habilita la consola web de H2 para inspeccionar las tablas en desarrollo. |
+| `spring.h2.console.path=/h2-console` | Publica la consola web de H2 en la ruta `/h2-console`. |
 
-| Parámetro | Default | Qué alimenta |
-|---|---|---|
-| `jugador` | `""` | `new Jugador()` si está vacío, si no `new Jugador(nombre)` — constructores sobrecargados |
-| `vida` | `0` | `new Zombie()` si es 0, si no `new Zombie(vida)` — constructor sobrecargado |
-| `profesion` | `""` | `new Aldeano()` si está vacío, si no `new Aldeano(profesion)` — constructor sobrecargado |
-| `danio` | `0` | `recibirDanio(danio)` — mensaje sobrecargado |
-| `atacante` | `""` | Si viene, usa `recibirDanio(danio, atacante)` — la otra sobrecarga |
-| `distancia` | `2.0` | `avanzar(distancia)` — mensaje sobrecargado (también existe `avanzar()`) |
-| `item` | `""` | Lo recoge el jugador antes de la interacción |
+Los tests con `@DataJpaTest` reemplazan automáticamente esta configuración por
+una base H2 embebida en memoria, de modo que no ensucian el archivo real de
+`./data/entidades-db`.
 
-```bash
-curl "localhost:8080/entidad/zombie?vida=35&danio=10&atacante=Creeper"
-curl "localhost:8080/entidad/aldeano?profesion=Herrero"
-curl "localhost:8080/entidades"
-curl "localhost:8080/rayo/cerdo"    # misma capacidad, otra familia
-curl "localhost:8080/rayo/creeper"  # reemplaza el default con su propio aviso
-curl "localhost:8080/ui/creeper"    # datos de dibujo de cualquier entidad
-curl -i "localhost:8080/entidad/creeper?danio=-5"   # 400: la clase rechaza el daño negativo
-```
+## Dependencias principales (`pom.xml`)
 
-Si un valor rompe una regla del dominio, la **clase** lo rechaza con una
-`IllegalArgumentException` y el controller la informa como HTTP 400.
+| Dependencia | Uso en el proyecto |
+|---|---|
+| `spring-boot-starter-web` | API REST, `@RestController`, Jackson y servidor embebido. |
+| `spring-boot-starter-data-jpa` | Repositorios Spring Data, Hibernate y transacciones. |
+| `spring-boot-starter-validation` | Soporte de Bean Validation en el classpath de la aplicación. |
+| `com.h2database:h2` | Base de datos H2 en archivo para desarrollo y ejecución local. |
+| `spring-boot-starter-test` | JUnit 5, MockMvc, AssertJ y utilidades de test de Spring Boot. |
 
-## Cómo probar
+El proyecto usa Spring Boot `3.5.16`, Java `21` y el wrapper de Maven incluido
+en el repositorio.
 
-```bash
-./mvnw test                 # 25 tests: dominio + HTTP (MockMvc)
-./mvnw spring-boot:run      # levanta el servicio
-```
-
-## Estructura de paquetes
-
-Sigue el template [alefq/lp3-template-tp](https://github.com/alefq/lp3-template-tp/tree/main/src/main/java/py/edu/uc/lp3):
+## Arquitectura y paquetes
 
 ```text
 src/main/java/py/edu/uc/lp3/
-├── Application.java              ← solo arranca Spring Boot
-├── domain/                       ← todo el modelado (sin HTTP)
-│   ├── Entidad.java              clase base abstracta
-│   ├── Hostil.java               abstracta, agrega accionAtaque() abstracto
-│   ├── NoHostil.java             abstracta, agrega interactuar() abstracto
-│   ├── Electrificable.java       interface: capacidad de dos familias
-│   ├── UICapable.java            interface: todo elemento dibujable
-│   ├── Hitbox.java               inmutable, compuesto por Entidad
-│   ├── Jugador.java
-│   ├── Zombie.java  Creeper.java  Esqueleto.java  Enderman.java
-│   └── Aldeano.java  Cerdo.java
-└── rest/controller/              ← solo la capa HTTP
-    ├── IndexController.java      GET /
-    └── EntidadController.java    GET /entidad/{tipo}, GET /entidades
+├── Application.java                         arranque de Spring Boot
+├── domain/                                  dominio puro (sin HTTP ni JPA de negocio)
+│   ├── Entidad.java                         raíz abstracta de la jerarquía
+│   ├── Hostil.java                          @MappedSuperclass de mobs hostiles
+│   ├── NoHostil.java                        mobs pasivos
+│   ├── Jugador.java                         entidad jugador
+│   ├── Zombie.java  Creeper.java            hijas persistidas de Hostil
+│   ├── Esqueleto.java  Enderman.java        otras entidades hostiles
+│   ├── Aldeano.java  Cerdo.java             entidades pasivas
+│   ├── Hitbox.java                          valor embebido (ancho x alto)
+│   ├── Electrificable.java                  capacidad de reaccionar a un rayo
+│   └── UICapable.java                       contrato de datos para dibujar
+├── repository/                              acceso a datos con Spring Data JPA
+│   ├── EntidadRepository.java               JpaRepository<Entidad, Long>
+│   └── SimulacionExplosionRepository.java   JpaRepository<SimulacionExplosion, Long>
+├── service/                                 capa de negocio y validaciones
+│   ├── HostilService.java                   CRUD, validaciones y ciclo de vida
+│   └── SimulacionService.java               explosión, daño y electrificación
+├── rest/controller/                         capa HTTP
+│   ├── IndexController.java                 GET /
+│   ├── EntidadController.java               endpoints de demostración del dominio
+│   ├── HostilController.java                CRUD /api/hostiles
+│   └── SimulacionController.java            /api/simulaciones
+├── rest/dto/                                contratos de entrada y salida
+│   ├── HostilDTO.java
+│   └── SimulacionDTO.java
+├── model/                                   entidades persistidas de simulación
+│   ├── SimulacionExplosion.java
+│   └── ResultadoVictima.java
+└── exception/                               jerarquía de errores de dominio
+    ├── HostilDomainException.java           base de todas las excepciones
+    ├── EntidadException.java                base de errores de entidad
+    ├── EntidadInvalidaException.java        400 Bad Request
+    ├── EntidadNoEncontradaException.java    404 Not Found
+    ├── CreeperNoEncontradoException.java    404 Not Found
+    ├── SimulacionInvalidaException.java     400 Bad Request
+    ├── EstadoInvalidoException.java         409 Conflict
+    └── ManejadorExcepciones.java            @RestControllerAdvice
 ```
 
-## Diagrama de clases
+## Diagrama de arquitectura
 
 ```mermaid
 classDiagram
     class Entidad {
         <<abstract>>
+        -Long id
         -int vida
         -String nombre
         -Hitbox hitboxFisico
@@ -111,106 +138,112 @@ classDiagram
         -String imagen
         -String sonido
         -double velocidad
-        -double x, y, z, rotacion
-        +comportamiento(Jugador) String*
-        +avanzar() String
-        +avanzar(distancia) String
-        +recibirDanio(puntos) String
-        +recibirDanio(puntos, atacante) String
-        +rotar(grados) String
-        +saltar() String
+        -double x
+        -double y
+        -double z
+        -double rotacion
+        +comportamiento(Jugador) String
+        +avanzar(double) String
+        +recibirDanio(int) String
+        +recibirDanio(int, String) String
+        +renombrar(String) String
+        +ajustarVida(int) String
+        +cambiarVelocidad(double) String
+        +morir() String
         +estaMuerto() boolean
-        #desplazar(dx, dy, dz) String
-        #morir() String
-        +getVida() int
+    }
+
+    class Hostil {
+        <<abstract, MappedSuperclass>>
+        -double rangoAggro
+        -int danioAtaque
+        +accionAtaque(Jugador) String
+    }
+
+    class NoHostil {
+        <<abstract>>
+        +interactuar(Jugador) String
+    }
+
+    class Jugador
+    class Zombie
+    class Creeper
+    class Esqueleto
+    class Enderman
+    class Aldeano
+    class Cerdo
+    class Hitbox
+
+    class Electrificable {
+        <<interface>>
+        +recibirRayo() String
+        +avisoRayo() String
+    }
+
+    class UICapable {
+        <<interface>>
         +getImagen() String
         +getPosicion() String
         +getSonido() String
         +getVelocidad() double
     }
 
-    class Hitbox {
-        <<final>>
-        -double ancho
-        -double alto
-        +Hitbox(ancho, alto)
+    class EntidadRepository {
+        <<interface, JpaRepository>>
+        +save(Entidad) Entidad
+        +findById(Long) Optional~Entidad~
+        +findAll() List~Entidad~
+        +findByNombreContainingIgnoreCase(String) List~Entidad~
+        +findByVidaGreaterThan(int) List~Entidad~
     }
 
-    class Hostil {
-        <<abstract>>
-        -double rangoAggro
-        +comportamiento(Jugador) String
-        +accionAtaque(Jugador) String*
-        +detecta(jugador, distancia) String
+    class SimulacionExplosionRepository {
+        <<interface, JpaRepository>>
+        +save(SimulacionExplosion) SimulacionExplosion
+        +findById(Long) Optional~SimulacionExplosion~
+        +findAll() List~SimulacionExplosion~
     }
 
-    class NoHostil {
-        <<abstract>>
-        +comportamiento(Jugador) String
-        +interactuar(Jugador) String*
-        +huir() String
+    class HostilService {
+        +crear(HostilRequest) HostilResponse
+        +listar(String) List~HostilResponse~
+        +buscar(Long) HostilResponse
+        +actualizarParcial(Long, HostilRequest) HostilResponse
+        +actualizarTotal(Long, HostilRequest) HostilResponse
+        +eliminar(Long) void
+        +recibirRayo(Long) Map
     }
 
-    class Electrificable {
-        <<interface>>
-        +recibirRayo() String*
-        +avisoRayo() String
+    class SimulacionService {
+        +simularExplosion(ExplosionRequest) ExplosionResultado
+        +listar() List~SimulacionExplosion~
+        +buscar(Long) SimulacionExplosion
     }
 
-    class UICapable {
-        <<interface>>
-        +getImagen() String*
-        +getPosicion() String*
-        +getSonido() String*
-        +getVelocidad() double*
+    class HostilController {
+        <<RestController>>
+        +crear(HostilRequest) ResponseEntity
+        +listar(String) List~HostilResponse~
+        +buscar(Long) HostilResponse
+        +actualizarTotal(Long, HostilRequest) HostilResponse
+        +actualizarParcial(Long, HostilRequest) HostilResponse
+        +eliminar(Long) ResponseEntity
+        +rayo(Long) Map
     }
 
-    class Jugador {
-        -List~String~ inventario
-        -int experiencia
-        +Jugador()
-        +Jugador(nombre)
-        +comportamiento(Jugador) String
-        +recoger(item) String
+    class SimulacionController {
+        <<RestController>>
+        +explosion(ExplosionRequest) ResponseEntity
+        +listar() List~SimulacionExplosion~
+        +buscar(Long) SimulacionExplosion
     }
 
-    class Zombie {
-        -boolean seQuemaAlSol
-        +Zombie()
-        +Zombie(vida)
-        +Zombie(nombre, vida)
-        +accionAtaque(Jugador) String
-    }
-
-    class Creeper {
-        -double radioExplosion
-        -boolean cargado
-        +accionAtaque(Jugador) String
-        +recibirRayo() String
-    }
-
-    class Esqueleto {
-        -int flechas
-        +accionAtaque(Jugador) String
-    }
-
-    class Enderman {
-        -String bloqueEnMano
-        +accionAtaque(Jugador) String
-        +teletransportarse() String
-    }
-
-    class Aldeano {
-        -String profesion
-        +Aldeano()
-        +Aldeano(profesion)
-        +interactuar(Jugador) String
-        +agregarOferta(oferta) String
-    }
-
-    class Cerdo {
-        -boolean ensillado
-        +interactuar(Jugador) String
+    class EntidadController {
+        <<RestController>>
+        +crear(String, String, int, String, String, String, double, int) Map
+        +todas() List~Map~
+        +rayo(String) Map
+        +ui(String) Map
     }
 
     class IndexController {
@@ -218,161 +251,224 @@ classDiagram
         +index() String
     }
 
-    class EntidadController {
-        <<RestController>>
-        +crear(tipo, ...) Map
-        +todas() List~Map~
+    class SimulacionExplosion {
+        -Long id
+        -Long creeperId
+        -boolean creeperCargado
+        -boolean creeperEncendido
+        -boolean creeperDestruido
+        -double radio
+        -int danioBase
+        +agregarResultado(ResultadoVictima) void
+        +marcarCreeperDestruido() void
     }
 
-    Entidad <|-- Hostil : es un
-    Entidad <|-- NoHostil : es un
-    Entidad <|-- Jugador : es un
+    class ResultadoVictima {
+        -Long hostilId
+        -String tipo
+        -double distancia
+        -int danio
+        -int vidaAntes
+        -int vidaDespues
+        -boolean viva
+    }
+
+    class HostilDomainException {
+        <<RuntimeException>>
+    }
+    class EntidadException
+    class EntidadInvalidaException
+    class EntidadNoEncontradaException
+    class CreeperNoEncontradoException
+    class SimulacionInvalidaException
+    class EstadoInvalidoException
+    class ManejadorExcepciones {
+        <<RestControllerAdvice>>
+    }
+
+    Entidad <|-- Hostil
+    Entidad <|-- NoHostil
+    Entidad <|-- Jugador
     Hostil <|-- Zombie
     Hostil <|-- Creeper
     Hostil <|-- Esqueleto
     Hostil <|-- Enderman
     NoHostil <|-- Aldeano
     NoHostil <|-- Cerdo
-    Entidad *-- Hitbox : tiene un
-    Entidad ..> Jugador : comportamiento(Jugador)
-    Electrificable <|.. Creeper : implementa
-    Electrificable <|.. Cerdo : implementa
-    UICapable <|.. Entidad : implementa (todas las entidades son dibujables)
-    EntidadController ..> Entidad : construye y habla por mensajes
-    EntidadController ..> Electrificable : pide el mensaje por la interfaz
-    EntidadController ..> UICapable : pide los datos de dibujo
+    Entidad *-- Hitbox
+    Entidad ..|> UICapable
+    Creeper ..|> Electrificable
+    Cerdo ..|> Electrificable
+
+    EntidadRepository ..> Entidad : persiste
+    SimulacionExplosionRepository ..> SimulacionExplosion : persiste
+    SimulacionExplosion *-- ResultadoVictima
+
+    HostilService ..> EntidadRepository : usa
+    HostilService ..> Hostil : construye y valida
+    HostilService ..> EntidadInvalidaException : lanza
+    HostilService ..> EntidadNoEncontradaException : lanza
+    HostilService ..> EstadoInvalidoException : lanza
+
+    SimulacionService ..> EntidadRepository : usa
+    SimulacionService ..> SimulacionExplosionRepository : usa
+    SimulacionService ..> Creeper : daña y destruye
+    SimulacionService ..> SimulacionInvalidaException : lanza
+    SimulacionService ..> CreeperNoEncontradoException : lanza
+    SimulacionService ..> EstadoInvalidoException : lanza
+
+    HostilController ..> HostilService : delega
+    SimulacionController ..> SimulacionService : delega
+    EntidadController ..> Entidad : construye
+    EntidadController ..> Electrificable : usa interfaz
+    EntidadController ..> UICapable : usa interfaz
+
+    HostilDomainException <|-- EntidadException
+    EntidadException <|-- EntidadInvalidaException
+    EntidadException <|-- EntidadNoEncontradaException
+    EntidadNoEncontradaException <|-- CreeperNoEncontradoException
+    EntidadException <|-- SimulacionInvalidaException
+    HostilDomainException <|-- EstadoInvalidoException
+    ManejadorExcepciones ..> HostilDomainException : traduce a HTTP
 ```
 
-`*` marca métodos abstractos. La línea `Entidad <|-- Hostil` y
-`Entidad <|-- NoHostil` son las dos clases hijas que **sobreescriben**
-`comportamiento(Jugador)`; `Jugador` también lo implementa por su cuenta.
-A su vez, cada tipo concreto implementa el gancho de su padre
-(`accionAtaque` o `interactuar`).
+## Reglas del juego
 
-## Sobrecarga y sobreescritura
+- **Electrificación mediante `Electrificable`:** cuando un rayo alcanza a un
+  `Creeper`, el service lo marca como cargado y su explosión pasa de 15 a 25
+  puntos de daño base; el `Cerdo` implementa la misma capacidad y se
+  transforma en Piglin Zombificado.
+- **Simulación de explosión con ciclo de vida irreversible:** el daño de la
+  explosión baja linealmente con la distancia y solo aplica dentro del radio,
+  y el `Creeper` que detona muere (`vida = 0`) y no puede volver a explotar ni
+  revivir, por lo que un segundo intento responde `409 Conflict`.
 
-### Sobreescritura (herencia: misma firma, clases distintas)
+## Endpoints
 
-La clase base `Entidad` declara el método **abstracto**
-`comportamiento(Jugador)`: algo que todas las entidades tienen que saber
-hacer, pero que el padre no puede resolver porque cada tipo responde distinto.
-
-- `Hostil.comportamiento(Jugador)` lo resuelve activándose con
-  `accionAtaque(objetivo)`.
-- `NoHostil.comportamiento(Jugador)` lo resuelve con `interactuar(objetivo)`.
-- `Jugador.comportamiento(Jugador)` responde con su propia experiencia e inventario.
-
-Mismo nombre, misma firma, implementación propia en cada clase: la que se
-ejecuta se decide en tiempo de ejecución según el objeto real. El controller
-nunca pregunta "¿de qué tipo es?": le pide `comportamiento(objetivo)` al tipo
-padre y el texto lo escribe la clase hija. En el nivel concreto sigue pasando
-lo mismo: `Zombie.accionAtaque` golpea a cuerpo a cuerpo, `Creeper.accionAtaque`
-explota, `Esqueleto.accionAtaque` dispara una flecha.
-
-### Sobrecarga (misma clase, otra lista de argumentos)
-
-Mismo nombre de mensaje dentro de la **misma clase**, con otra lista de
-argumentos. Elige el compilador, según los datos que se pasan:
-
-| Clase | Firma | Cuándo se usa |
+| Método y ruta | Controller | Qué hace |
 |---|---|---|
-| `Entidad` | `avanzar()` | sin datos: paso por defecto de 1 bloque |
-| `Entidad` | `avanzar(double distancia)` | con la distancia exacta |
-| `Entidad` | `recibirDanio(int puntos)` | solo los puntos de daño |
-| `Entidad` | `recibirDanio(int puntos, String atacante)` | además, quién ataca |
-| `Zombie` | `Zombie()`, `Zombie(int vida)`, `Zombie(String, int)` | constructores simples y sobrecargados |
-| `Jugador` | `Jugador()` (Steve), `Jugador(String nombre)` | idem |
-| `Aldeano` | `Aldeano()` (Granjero), `Aldeano(String profesion)` | idem |
+| `GET /` | `IndexController` | Confirma que el servicio está vivo |
+| `GET /entidad/{tipo}` | `EntidadController` | Construye una entidad de demostración desde la URL |
+| `GET /entidades` | `EntidadController` | Lista las entidades de demostración con su comportamiento |
+| `GET /rayo/{tipo}` | `EntidadController` | Pide los mensajes de `Electrificable` |
+| `GET /ui/{tipo}` | `EntidadController` | Devuelve imagen, posición, sonido y velocidad (`UICapable`) |
+| `GET /api/hostiles` | `HostilController` | Lista hostiles persistidos; acepta `?nombre=` |
+| `POST /api/hostiles` | `HostilController` | Crea un `zombie` o un `creeper` |
+| `GET /api/hostiles/{id}` | `HostilController` | Busca un hostil por ID |
+| `PUT /api/hostiles/{id}` | `HostilController` | Reemplaza nombre, vida, velocidad y atributos opcionales |
+| `PATCH /api/hostiles/{id}` | `HostilController` | Actualiza solo los campos enviados |
+| `DELETE /api/hostiles/{id}` | `HostilController` | Elimina un hostil |
+| `GET /api/hostiles/{id}/rayo` | `HostilController` | Electrifica un Creeper persistido y devuelve el resultado |
+| `POST /api/simulaciones/explosion` | `SimulacionController` | Simula y persiste una explosión de Creeper |
+| `GET /api/simulaciones` | `SimulacionController` | Lista las simulaciones persistidas |
+| `GET /api/simulaciones/{id}` | `SimulacionController` | Busca una simulación por ID |
 
-Las sobrecargas delegan entre sí (`avanzar()` llama a `avanzar(1.0)`,
-`Zombie(int)` llama a `this("Zombie", vida)`) para no duplicar la regla.
-Desde la URL se ven directo: `?vida=35` construye con el constructor
-sobrecargado y `?atacante=Creeper` elige la sobrecarga de `recibirDanio`.
+Tipos válidos en `EntidadController`: `creeper`, `zombie`, `esqueleto`,
+`enderman`, `cerdo`, `aldeano`. En `/rayo/{tipo}` responden `creeper` y
+`cerdo`; en el CRUD persistido solo se aceptan `zombie` y `creeper`.
 
-### Cómo distinguirlas
-
-- **Sobrecarga**: una sola clase, mismo nombre, *distinta lista de
-  argumentos*. Se resuelve en **compilación**.
-- **Sobreescritura**: clase hija repite la *misma firma* de un método de la
-  padre. Se resuelve en **ejecución**, con el objeto real.
-
-### Pregunta de anclaje: ¿puede el controller dejar el objeto inválido?
-
-No. `vida` y el resto del estado son **privados** y `Entidad` no expone
-setters: el estado solo cambia por constructores y mensajes de la propia
-clase. Si el controller intentara algo como `entidad.setVida(0)` no
-compilaría; y si manda un valor ilegal por la URL (`?danio=-5`), la clase
-lanza `IllegalArgumentException` y el controller lo devuelve como HTTP 400,
-sin haber tocado el objeto.
-
-## Interfaz: una capacidad compartida entre familias
-
-`Electrificable` (en `domain`) declara la capacidad de **reaccionar a un
-rayo**. Es un rol que cruza la jerarquía: lo cumplen el `Creeper` (familia
-`Hostil`) y el `Cerdo` (familia `NoHostil`), que no comparten ningún ancestro
-más allá de `Entidad`.
-
-- El mensaje `recibirRayo()` devuelve texto y **cada clase lo escribe a su
-  modo**: el Creeper se carga y explota más fuerte; el Cerdo se convierte en
-  Piglin Zombificado.
-- La interfaz ofrece un `default` para `avisoRayo()`. El **Cerdo lo hereda**
-  y el **Creeper lo reemplaza** con su propio texto: ahí se ve la diferencia
-  entre usar un default y sobreescribirlo.
-
-`GET /rayo/{tipo}` recibe la entidad, la guarda en una variable del tipo de la
-interfaz (`Electrificable`) y le pide los mensajes a ella. El controller nunca
-pregunta la clase concreta ni conoce qué tipo de mob es:
+Ejemplos:
 
 ```bash
-curl "localhost:8080/rayo/creeper"
-# {"entidad":"Creeper(Creeper, vida=20)","avisoRayo":"El Creeper sisea mas fuerte...","recibirRayo":"Creeper cargado por un rayo: ..."}
+curl "localhost:8080/entidad/zombie?vida=35&danio=10&atacante=Creeper"
 curl "localhost:8080/rayo/cerdo"
-# {"...","avisoRayo":"El cielo se ilumina: algo va a cambiar.","recibirRayo":"El cerdo se transforma en Piglin Zombificado..."}
+curl -i "localhost:8080/entidad/creeper?danio=-5"
+
+curl -X POST "localhost:8080/api/hostiles" \
+  -H "Content-Type: application/json" \
+  -d '{"tipo":"creeper","nombre":"Boom","vida":20,"velocidad":0.25}'
+
+curl -X POST "localhost:8080/api/simulaciones/explosion" \
+  -H "Content-Type: application/json" \
+  -d '{"creeperId":1,"cargado":true,"victimas":[{"hostilId":2,"distancia":1.5}]}'
 ```
 
-## Interfaz UICapable: todos los elementos dibujables
+`POST /api/simulaciones/explosion` devuelve `201 Created`; si la petición está
+mal formada devuelve `400`; si el Creeper no existe, `404`; y si ya está muerto
+o ya explotó, `409 Conflict`.
 
-`UICapable` (en `domain`) define qué necesita saber el motor de render para
-dibujar un elemento: su **imagen**, su **posición**, su **sonido** y su
-**velocidad**. La implementa `Entidad`, así que **todas** las entidades
-(hostiles, pasivas y el jugador) son dibujables sin que cada clase repita el
-contrato.
+## Qué hay que pensar
 
-`Entidad` guarda `imagen`, `sonido` y `velocidad` como campos (validados en el
-constructor) y calcula `posicion` con sus coordenadas; cada subclase los
-alimenta desde su `super(...)` con sus propios valores:
+### ¿Por qué las reglas van en el service y no en la entity?
 
-| Entidad | Imagen | Sonido | Velocidad |
-|---|---|---|---|
-| `Zombie` | `texturas/zombie.png` | gruñido | 0.23 |
-| `Creeper` | `texturas/creeper.png` | siseo | 0.25 |
-| `Esqueleto` | `texturas/esqueleto.png` | huesos | 0.25 |
-| `Enderman` | `texturas/enderman.png` | grito | 0.3 |
-| `Aldeano` | `texturas/aldeano.png` | hmm | 0.2 |
-| `Cerdo` | `texturas/cerdo.png` | oink | 0.2 |
-| `Jugador` | `texturas/jugador.png` | pasos | 0.28 |
+Porque la entidad debe ser un objeto de dominio reutilizable y fácil de probar:
+solo conserva atributos privados, constructores y métodos simples que mutan su
+estado. Las validaciones de entrada, la decisión de aceptar o rechazar una
+operación, el acceso al repositorio y la transacción pertenecen al service. Una
+regla como “un mob muerto no revive” no depende solo del objeto, sino también
+de la operación solicitada (`PUT`/`PATCH`) y del estado persistido; por eso se
+controla en `HostilService` antes de mutar. La simulación de explosión
+involucra varias entidades, distancias, daño y persistencia, así que vive en
+`SimulacionService`. Así el dominio no lanza excepciones ni conoce HTTP, y las
+validaciones están en un único lugar para todos los endpoints.
 
-`GET /ui/{tipo}` construye la entidad y la trata por el **tipo de la interfaz**
-(`UICapable`), nunca por su clase concreta:
+### ¿Cómo funciona la herencia JOINED con discriminador?
 
-```bash
-curl "localhost:8080/ui/creeper"
-# {"entidad":"Creeper(Creeper, vida=20)","imagen":"texturas/creeper.png","posicion":"(0.0, 0.0, 0.0)","sonido":"siseo","velocidad":0.25}
-```
+`Entidad` es la entidad raíz JPA (`@Entity`) y define
+`@Inheritance(strategy = JOINED)` junto con
+`@DiscriminatorColumn(name = "tipo")`. La tabla `entidad` guarda los campos
+comunes y la columna `tipo`. Las clases persistidas hijas, `Zombie` y
+`Creeper`, usan `@DiscriminatorValue` y tienen su propia tabla (`zombie` o
+`creeper`) cuya clave primaria es también clave foránea hacia `entidad.id`.
+Al leer, Hibernate usa `tipo` para saber qué subclase instanciar y hace un
+`JOIN` por `id` para recuperar las columnas específicas. `Hostil` no genera
+tabla porque es `@MappedSuperclass`: solo aporta campos y comportamiento a sus
+hijas. `EntidadRepository` trabaja con el tipo padre y aun así devuelve
+instancias concretas.
+
+### ¿Cómo se manejan los códigos HTTP 400, 404 y 409?
+
+`ManejadorExcepciones` es un `@RestControllerAdvice` que traduce cada
+excepción de dominio a un JSON uniforme con `status`, `error`, `tipo` y
+`mensaje`:
+
+- **400 Bad Request:** la petición trae datos inválidos o incompletos
+  (`EntidadInvalidaException`, `SimulacionInvalidaException`), por ejemplo
+  nombre vacío, vida no positiva, velocidad negativa o distancia negativa.
+- **404 Not Found:** el recurso pedido no existe
+  (`EntidadNoEncontradaException`, `CreeperNoEncontradoException`).
+- **409 Conflict:** la petición es válida, pero el estado actual no permite la
+  operación (`EstadoInvalidoException`), por ejemplo intentar revivir una
+  entidad con `vida <= 0` o explotar de nuevo un Creeper ya destruido.
+
+## Importar y ejecutar la colección de Insomnia
+
+1. Levantá la aplicación con `./mvnw spring-boot:run` y esperá a que escuche en
+   `http://localhost:8080`.
+2. Abrí Insomnia.
+3. Entrá a **Application → Import/Export → Import Data → From File** (en
+   algunas versiones aparece como **Import → From File**).
+4. Seleccioná `docs/insomnia/insomnia_crud_hostil.json` desde la raíz del
+   repositorio.
+5. Elegí el workspace/proyecto destino y confirmá la importación; Insomnia
+   detecta el formato del archivo y crea las solicitudes.
+6. Verificá que las URLs de las solicitudes apunten a `http://localhost:8080`
+   y ejecutá cada una con **Send**, en orden: primero crear un `zombie` y un
+   `creeper`, después listar, consultar, actualizar y finalmente simular la
+   explosión.
+7. Repetí la simulación sobre el mismo Creeper para comprobar el
+   `409 Conflict` del ciclo de vida irreversible.
 
 ## Tests
 
-```text
-src/test/java/py/edu/uc/lp3/
-├── ApplicationTests.java                  arranque del contexto
-├── domain/EntidadTest.java                sobreescritura, sobrecarga, constructores, invariantes e interfaz
-└── rest/controller/EntidadControllerTest.java   GET / y construcción desde la URL por HTTP
-```
-# Taller de Git 2026 - API REST (Minecraft)
-
-**Enlace al commit de la solución:** [https://github.com/<usuario>/INICIALES-taller-git-2026/commit/{EL_HASH_DEL_COMMIT}](https://github.com/<usuario>/INICIALES-taller-git-2026/commit/{EL_HASH_DEL_COMMIT})
-
-## 🚀 Cómo arrancar el proyecto
-Para iniciar el servicio HTTP localmente con Spring Boot, abre una terminal en la raíz del proyecto y ejecuta:
 ```bash
-./mvnw spring-boot:run
+./mvnw test
+```
+
+La suite suma **44 tests**:
+
+| Test | Cantidad |
+|---|---:|
+| `ApplicationTests` | 1 |
+| `domain/EntidadTest` | 13 |
+| `repository/EntidadRepositoryTest` | 2 |
+| `service/HostilServiceTest` | 4 |
+| `service/SimulacionServiceTest` | 6 |
+| `rest/controller/EntidadControllerTest` | 12 |
+| `rest/controller/ManejadorExcepcionesTest` | 6 |
+| **Total** | **44** |
+
+## Licencia
+
+[Apache License 2.0](LICENSE): se puede usar, modificar y distribuir (incluso
+comercialmente) acreditando el origen y sin garantías.
