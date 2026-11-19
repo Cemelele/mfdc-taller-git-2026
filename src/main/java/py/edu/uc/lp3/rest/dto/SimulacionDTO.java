@@ -30,4 +30,15 @@ public final class SimulacionDTO {
                                      boolean creeperDestruido,
                                      List<VictimaResultado> victimas) {
     }
+
+    public record ExplosionFijaRequest(Long creeperId, Boolean cargado,
+                                       List<VictimaRequest> victimas) {
+    }
+
+    public record ExplosionFijaResultado(Long simulacionId, Long creeperId,
+                                         boolean creeperCargado, boolean creeperEncendido,
+                                         double radio, int danioFijo,
+                                         boolean creeperDestruido,
+                                         List<VictimaResultado> victimas) {
+    }
 }

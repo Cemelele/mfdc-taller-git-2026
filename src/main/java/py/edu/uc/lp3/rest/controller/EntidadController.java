@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import py.edu.uc.lp3.domain.Aldeano;
 import py.edu.uc.lp3.domain.Cerdo;
 import py.edu.uc.lp3.domain.Creeper;
@@ -41,20 +45,27 @@ import py.edu.uc.lp3.domain.Zombie;
  *   GET /entidades
  */
 @RestController
+@Tag(name = "Entidades de demostracion",
+        description = "Construccion de entidades del dominio y demostracion de sus interfaces")
 public class EntidadController {
 
     private static final List<String> TIPOS =
             List.of("creeper", "zombie", "esqueleto", "enderman", "cerdo", "aldeano");
 
     @GetMapping("/entidad/{tipo}")
-    public Map<String, Object> crear(@PathVariable String tipo,
-                                     @RequestParam(defaultValue = "") String jugador,
-                                     @RequestParam(defaultValue = "0") int danio,
-                                     @RequestParam(defaultValue = "") String atacante,
-                                     @RequestParam(defaultValue = "") String profesion,
-                                     @RequestParam(defaultValue = "") String item,
-                                     @RequestParam(defaultValue = "2.0") double distancia,
-                                     @RequestParam(defaultValue = "0") int vida) {
+    @Operation(summary = "Crear y describir una entidad",
+            description = "Construye una entidad del dominio y devuelve el resultado de sus "
+                    + "metodos comportamiento, avanzar, rotar, saltar y recibirDanio.")
+    public Map<String, Object> crear(
+            @Parameter(description = "Tipo de entidad: creeper, zombie, esqueleto, enderman, cerdo o aldeano")
+            @PathVariable String tipo,
+            @Parameter(description = "Nombre del jugador objetivo") @RequestParam(defaultValue = "") String jugador,
+            @Parameter(description = "Danio a recibir; debe ser mayor o igual a cero") @RequestParam(defaultValue = "0") int danio,
+            @Parameter(description = "Nombre del atacante") @RequestParam(defaultValue = "") String atacante,
+            @Parameter(description = "Profesion del aldeano") @RequestParam(defaultValue = "") String profesion,
+            @Parameter(description = "Item que recoge el jugador") @RequestParam(defaultValue = "") String item,
+            @Parameter(description = "Distancia que avanza la entidad") @RequestParam(defaultValue = "2.0") double distancia,
+            @Parameter(description = "Vida inicial del zombie") @RequestParam(defaultValue = "0") int vida) {
         if (danio < 0) {
             throw new IllegalArgumentException("El dano no puede ser negativo");
         }
@@ -68,6 +79,8 @@ public class EntidadController {
 
     /** Todas las entidades del mundo, cada una mostrando su propio comportamiento. */
     @GetMapping("/entidades")
+    @Operation(summary = "Listar entidades de demostracion",
+            description = "Devuelve todas las entidades del mundo con su propio comportamiento.")
     public List<Map<String, Object>> todas() {
         Jugador objetivo = new Jugador();
         return TIPOS.stream()
@@ -83,6 +96,8 @@ public class EntidadController {
      * {@link Electrificable} y le pide los mensajes a ella.
      */
     @GetMapping("/rayo/{tipo}")
+    @Operation(summary = "Electrocutar una entidad",
+            description = "Devuelve los mensajes de Electrificable para un Creeper o un Cerdo.")
     public Map<String, Object> rayo(@PathVariable String tipo) {
         Entidad entidad = crearEntidad(tipo, "", 0);
         if (!(entidad instanceof Electrificable electrico)) {
@@ -111,6 +126,8 @@ public class EntidadController {
      * {@link UICapable} y no por su clase concreta.
      */
     @GetMapping("/ui/{tipo}")
+    @Operation(summary = "Obtener datos de UI",
+            description = "Devuelve imagen, posicion, sonido y velocidad mediante UICapable.")
     public Map<String, Object> ui(@PathVariable String tipo) {
         UICapable elemento = crearEntidad(tipo, "", 0);
         Map<String, Object> json = new LinkedHashMap<>();
