@@ -1,0 +1,6 @@
+{
+	"rechazadoPor": "A3",
+	"companeroStatus": 409,
+	"companeroError": "ExplosionNoPermitidaException",
+	"mensaje": "El Creeper necesita una carga mínima de 3"
+}

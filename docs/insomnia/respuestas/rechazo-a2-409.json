@@ -1,0 +1,6 @@
+{
+	"rechazadoPor": "A2",
+	"companeroStatus": 422,
+	"companeroError": "regla-de-juego",
+	"mensaje": "El creeper 3 no tiene carga para explotar"
+}

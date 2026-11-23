@@ -1,0 +1,475 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: Scratch Pad
+meta:
+  id: wrk_scratchpad
+  created: 1793210915841
+  modified: 1793210915841
+  description: ""
+collection:
+  - name: My Folder
+    meta:
+      id: fld_729aab566714404996c6b3f86f46be53
+      created: 1795401430802
+      modified: 1795401430802
+      sortKey: -1795401430802
+      description: ""
+    children:
+      - url: "{{ _.a1_url }}/api/escenarios/creeper-electrificado"
+        name: Escenario feliz
+        meta:
+          id: req_aa0653ed03e9475c8d83cb06c9c697a1
+          created: 1795464594029
+          modified: 1795464711603
+          isPrivate: false
+          description: ""
+          sortKey: -1795464594029
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+              "descripcion": "Creeper electrificado detona sobre un Zombie y un Jugador",
+              "a2": { "creeperId": {{ _.ruth_creeper_id }} },
+              "a3": {
+                "creeperId": {{ _.seb_creeper_id }},
+                "jugadorId": {{ _.seb_jugador_id }},
+                "zombieId": {{ _.seb_zombie_id }},
+                "radio": 5
+              }
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.a1_url }}/api/escenarios/creeper-electrificado"
+        name: Rechazo de A2
+        meta:
+          id: req_36c7b4e160494a23a9e85c67ba7e7dee
+          created: 1795464718592
+          modified: 1795464795205
+          isPrivate: false
+          description: ""
+          sortKey: -1795464718592
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+              "descripcion": "Creeper electrificado detona sobre un Zombie y un Jugador",
+              "a2": { "creeperId": {{ _.ruth_creeper_sin_carga_id }} },
+              "a3": {
+                "creeperId": {{ _.seb_creeper_id }},
+                "jugadorId": {{ _.seb_jugador_id }},
+                "zombieId": {{ _.seb_zombie_id }},
+                "radio": 5
+              }
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.a1_url }}/api/escenarios/creeper-electrificado"
+        name: Rechazo de A3
+        meta:
+          id: req_9e03697fdaad42b38de37518514ce5f0
+          created: 1795464798039
+          modified: 1795464845596
+          isPrivate: false
+          description: ""
+          sortKey: -1795464798039
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+              "descripcion": "Creeper electrificado detona sobre un Zombie y un Jugador",
+              "a2": { "creeperId": {{ _.ruth_creeper_id }} },
+              "a3": {
+                "creeperId": {{ _.seb_creeper_poca_carga_id }},
+                "jugadorId": {{ _.seb_jugador_id }},
+                "zombieId": {{ _.seb_zombie_id }},
+                "radio": 5
+              }
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.a1_url }}/api/escenarios/creeper-electrificado"
+        name: get escenarios
+        meta:
+          id: req_090b865ec3f640638f12161e75758046
+          created: 1795465963822
+          modified: 1795466898471
+          isPrivate: false
+          description: ""
+          sortKey: -1795465963822
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: ruth
+    meta:
+      id: fld_aaf3a97aa34647e6ab441c9a249242b9
+      created: 1795401475186
+      modified: 1795401475186
+      sortKey: -1795401475186
+      description: ""
+    children:
+      - url: "{{ _.ruth_url }}/api/minecraft/mobs"
+        name: "Ruth: crear Creeper"
+        meta:
+          id: req_6e6f7bbb495f428c9f44bbe4adf782c0
+          created: 1795403036236
+          modified: 1795403303730
+          isPrivate: false
+          description: ""
+          sortKey: -1795403036236
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"tipo":"CREEPER","vida":20,"danoBase":6,"velocidad":3,"cargaExplosion":15}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.ruth_url }}/api/minecraft/mobs"
+        name: "Ruth: crear Zombie"
+        meta:
+          id: req_3e1514a8e50a4affb2dd34456e5c7487
+          created: 1795403230302
+          modified: 1795403281552
+          isPrivate: false
+          description: ""
+          sortKey: -1795403230302
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"tipo":"ZOMBIE","vida":30,"danoBase":4,"velocidad":3}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.ruth_url }}/api/minecraft/mobs"
+        name: "Ruth: crear Creeper sin carga (para rechazo)"
+        meta:
+          id: req_4e13241092334d9f8d9c68eca0cfbeaa
+          created: 1795403309840
+          modified: 1795403350627
+          isPrivate: false
+          description: ""
+          sortKey: -1795403309840
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"tipo":"CREEPER","vida":20,"danoBase":6,"velocidad":3,"cargaExplosion":0}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.ruth_url }}/api/minecraft/simulaciones/explosion"
+        name: "Ruth: explosión "
+        meta:
+          id: req_d3b1d6d382a24754ac3f04fb84666f65
+          created: 1795405389613
+          modified: 1795405510049
+          isPrivate: false
+          description: ""
+          sortKey: -1795405389613
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"creeperId": {{ _.ruth_creeper_id }}}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.ruth_url }}/api/minecraft/simulaciones/explosion"
+        name: "Ruth: Creeper inexistente"
+        meta:
+          id: req_01fdc39acd3e4547b4b612cf04b9576e
+          created: 1795405535901
+          modified: 1795405563662
+          isPrivate: false
+          description: ""
+          sortKey: -1795405535901
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"creeperId": 9999}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.ruth_url }}/api/minecraft/simulaciones/explosion"
+        name: "Ruth: sin carga"
+        meta:
+          id: req_d3c1d63bbfba48f888c22026c2fac0bb
+          created: 1795405574884
+          modified: 1795405675050
+          isPrivate: false
+          description: ""
+          sortKey: -1795405574884
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"creeperId": {{ _.ruth_creeper_sin_carga_id }}}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: seb
+    meta:
+      id: fld_d0146a24db62422a970fc03a7c9ea0db
+      created: 1795403398548
+      modified: 1795403398548
+      sortKey: -1795403398548
+      description: ""
+    children:
+      - url: "{{ _.seb_url }}/minecraft/sgomezdelafuente/entidades"
+        name: "Seb: crear Creeper"
+        meta:
+          id: req_82384ec1b72b430aaecc9d0f1c6ff4c0
+          created: 1795403406070
+          modified: 1795403444130
+          isPrivate: false
+          description: ""
+          sortKey: -1795403406070
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"tipo":"CREEPER","vida":20,"danoBase":0,"velocidad":2,"cargaExplosion":4}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.seb_url }}/minecraft/sgomezdelafuente/entidades"
+        name: "Seb: crear Jugador"
+        meta:
+          id: req_5a20f09153d94877a8f0dd15f4f0b867
+          created: 1795403862035
+          modified: 1795405272567
+          isPrivate: false
+          description: ""
+          sortKey: -1795403862035
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "tipo": "JUGADOR",
+              "vida": 20,
+              "danoBase": 4,
+              "velocidad": 3,
+              "x": 0,
+              "y": 0,
+              "armadura": 5
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.seb_url }}/minecraft/sgomezdelafuente/entidades"
+        name: "Seb: crear Zombie"
+        meta:
+          id: req_5c78f8fb52a6446b96b69ac18a5a0c64
+          created: 1795405044216
+          modified: 1795405090880
+          isPrivate: false
+          description: ""
+          sortKey: -1795405044216
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"tipo":"ZOMBIE","vida":20,"danoBase":2,"velocidad":2}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.seb_url }}/minecraft/sgomezdelafuente/entidades"
+        name: "Seb: crear Creeper con poca carga"
+        meta:
+          id: req_be8e66c050774949aed55e868c7d1c5c
+          created: 1795405101607
+          modified: 1795405140038
+          isPrivate: false
+          description: ""
+          sortKey: -1795405101607
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"tipo":"CREEPER","vida":20,"danoBase":0,"velocidad":2,"cargaExplosion":2}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.seb_url }}/minecraft/sgomezdelafuente/simulaciones/explosion"
+        name: "Seb: explosión"
+        meta:
+          id: req_eaf7e753f94c45c7a1d1eea4aa7d7d4b
+          created: 1795405699708
+          modified: 1795405733507
+          isPrivate: false
+          description: ""
+          sortKey: -1795405699708
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"creeperId": {{ _.seb_creeper_id }}, "jugadorId": {{ _.seb_jugador_id
+            }}, "zombieId": {{ _.seb_zombie_id }}, "radio": 5}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.seb_url }}/minecraft/sgomezdelafuente/simulaciones/explosion"
+        name: "Seb: carga insuficiente / inexistente"
+        meta:
+          id: req_13085d89ec09468e80e2ea0637d17cc6
+          created: 1795405850578
+          modified: 1795406877687
+          isPrivate: false
+          description: ""
+          sortKey: -1795405850578
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{"creeperId": 3, "jugadorId": {{ _.seb_jugador_id }}, "zombieId": {{
+            _.seb_zombie_id }}, "radio": 5}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_99d30891da4bdcebc63947a8fc17f076de878684
+    created: 1793294301497
+    modified: 1793294301497
+environments:
+  name: Base Environment
+  meta:
+    id: env_99d30891da4bdcebc63947a8fc17f076de878684
+    created: 1793294301403
+    modified: 1795465094602
+    isPrivate: false
+  data:
+    a1_url: http://localhost:8080
+    ruth_url: http://localhost:8081
+    seb_url: http://localhost:8082
+    ruth_creeper_id: "5"
+    ruth_creeper_sin_carga_id: "3"
+    seb_creeper_id: "5"
+    seb_jugador_id: "7"
+    seb_zombie_id: "6"
+    seb_creeper_poca_carga_id: "3"

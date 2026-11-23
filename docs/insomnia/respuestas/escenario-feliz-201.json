@@ -1,0 +1,16 @@
+{
+	"id": 1,
+	"descripcion": "Creeper electrificado detona sobre un Zombie y un Jugador",
+	"a2": {
+		"creeperId": 4
+	},
+	"a3": {
+		"creeperId": 5,
+		"jugadorId": 7,
+		"zombieId": 6,
+		"radio": 5
+	},
+	"respuestaA2": "{\"explosiones\":[{\"creeperId\":4,\"carga\":15,\"victimas\":[{\"id\":2,\"tipo\":\"Zombie\",\"vidaAntes\":15,\"vidaDespues\":0},{\"id\":3,\"tipo\":\"Creeper\",\"vidaAntes\":5,\"vidaDespues\":0}]}],\"estadoFinal\":[{\"id\":1,\"tipo\":\"Creeper\",\"vida\":0},{\"id\":2,\"tipo\":\"Zombie\",\"vida\":0},{\"id\":3,\"tipo\":\"Creeper\",\"vida\":0},{\"id\":4,\"tipo\":\"Creeper\",\"vida\":0}]}",
+	"respuestaA3": "{\"danoExplosion\":16,\"jugadorAfectado\":true,\"zombieAfectado\":true,\"creeper\":{\"id\":5,\"tipo\":\"CREEPER\",\"vida\":0,\"danoBase\":0,\"velocidad\":2,\"x\":0,\"y\":0,\"hostil\":true,\"cargaExplosion\":0,\"comportamiento\":\"El Creeper aumenta su carga y explota; al desaparecer reinicia la carga\"},\"jugador\":{\"id\":7,\"tipo\":\"JUGADOR\",\"vida\":9,\"danoBase\":4,\"velocidad\":3,\"x\":0,\"y\":0,\"armadura\":5,\"comportamiento\":\"El jugador explora, recibe daño reducido por armadura y puede curarse\"},\"zombie\":{\"id\":6,\"tipo\":\"ZOMBIE\",\"vida\":4,\"danoBase\":2,\"velocidad\":2,\"x\":0,\"y\":0,\"hostil\":true,\"comportamiento\":\"El zombi persigue al jugador y ataca con su daño base\"}}",
+	"fecha": "2026-11-23T17:16:44.014991525"
+}
