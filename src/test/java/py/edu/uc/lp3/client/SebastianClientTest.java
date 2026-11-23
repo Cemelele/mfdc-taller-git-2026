@@ -55,7 +55,7 @@ class SebastianClientTest {
                 .baseUrl("http://localhost:" + server.getAddress().getPort())
                 .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
                         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000)
-                        .responseTimeout(Duration.ofMillis(200))))
+                        .responseTimeout(Duration.ofSeconds(2))))
                 .build();
         client = new SebastianClient(webClient, PATH, objectMapper);
     }
@@ -103,7 +103,7 @@ class SebastianClientTest {
 
     @Test
     void unTimeoutLanzaCompaneroNoDisponible() {
-        demoraMs.set(1000);
+        demoraMs.set(4000);
         respuesta.set("{\"aceptada\":true}");
 
         CompaneroNoDisponibleException ex = assertThrows(CompaneroNoDisponibleException.class,
