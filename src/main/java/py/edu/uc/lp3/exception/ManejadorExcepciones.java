@@ -44,6 +44,24 @@ public class ManejadorExcepciones {
         return respuesta(HttpStatus.CONFLICT, ex);
     }
 
+    @ExceptionHandler(CompaneroRechazoException.class)
+    public ResponseEntity<Map<String, Object>> companeroRechazo(CompaneroRechazoException ex) {
+        Map<String, Object> cuerpo = new LinkedHashMap<>();
+        cuerpo.put("rechazadoPor", ex.getOrigen());
+        cuerpo.put("companeroStatus", ex.getStatus());
+        cuerpo.put("companeroError", ex.getCompaneroError());
+        cuerpo.put("mensaje", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(cuerpo);
+    }
+
+    @ExceptionHandler(CompaneroNoDisponibleException.class)
+    public ResponseEntity<Map<String, Object>> companeroNoDisponible(CompaneroNoDisponibleException ex) {
+        Map<String, Object> cuerpo = new LinkedHashMap<>();
+        cuerpo.put("origen", ex.getOrigen());
+        cuerpo.put("mensaje", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(cuerpo);
+    }
+
     /** Red de seguridad para cualquier excepcion nueva de la familia Hostil. */
     @ExceptionHandler(HostilDomainException.class)
     public ResponseEntity<Map<String, Object>> dominioInvalido(HostilDomainException ex) {
