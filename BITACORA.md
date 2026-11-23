@@ -1,13 +1,13 @@
 # Bitácora de uso de inteligencia artificial
 
-Ejercicio **POO-08** — Arquitectura en capas, persistencia, reglas de negocio
-e invariantes de ciclo de vida
+Ejercicios **POO-08** — Arquitectura en capas, persistencia, reglas de negocio
+e invariantes de ciclo de vida — y **POO-09** — APIs cruzadas
 Repositorio: `Cemelele/mfdc-taller-git-2026`
 Dominio: **Minecraft**
 
 > Esta bitácora conserva el historial de las sesiones de trabajo. Las primeras
 > sesiones documentan las etapas previas (POO-06, CRUD y simulación); el estado
-> final del repositorio corresponde a POO-08.
+> final del repositorio corresponde a POO-08 y POO-09.
 
 ## Herramienta y modelo
 
@@ -325,13 +325,64 @@ Insomnia de la raíz.
 - La tabla de excepciones no contemplaba los conflictos de estado; se agregó
   `409 Conflict` con los casos de entidad muerta y Creeper ya explotado.
 
-## Novena sesión: Clientes HTTP hacia los servicios de los compañeros (POO-09)
+## Novena sesión: OpenAPI, Swagger UI y prototipo de WebClient (POO-09)
 
 | Dato | Valor |
 |---|---|
 | **Marca / agente** | OpenCode (asistente de código en terminal) |
-| **Modelo LLM exacto** | `deepseek/deepseek-flash` |
-| **Fecha** | 23 de noviembre de 2026 |
+| **Modelo LLM exacto** | `DeepSeek V4.1 Flash 1017` |
+| **Fecha** | 18 y 19 de noviembre de 2026 |
+
+### Prompt usado
+
+Dos prompts de la clase del profesor:
+
+1. «Agrega OpenAPI a todos los servicios REST y swaggerUI al proyecto».
+2. «Examina el OpenAPI del link que te paso (el Swagger de un compañero) y crea
+   un servicio que utilice parte de la lógica actual de mi proyecto en
+   combinación con alguna de las reglas del proyecto de ese enlace. Quiero que
+   la URL sea externalizable».
+
+### Qué generó el agente
+
+- Agregó `springdoc-openapi-starter-webmvc-ui` (2.8.17) y
+  `spring-boot-starter-webflux` al `pom.xml`, y las propiedades de OpenAPI y
+  Swagger UI (`/v3/api-docs` y `/swagger-ui.html`) en `application.properties`.
+- Anotó con springdoc (`@Tag`, `@Operation`, `@ApiResponse`, `@Parameter`) los
+  controllers `SimulacionController`, `HostilController`, `EntidadController` e
+  `IndexController`.
+- Creó el prototipo de consumo de una API externa con `WebClient`:
+  `WebClientConfig` (con la URL base en la propiedad `api.externa.base-url`),
+  `ObjetoExternoService`, `ObjetoExternoController`, `ObjetoExternoDTO` y
+  `ManejadorApiExterna`.
+
+### Qué corregí o decidí yo
+
+- Le pasé a OpenCode la URL del Swagger de un compañero para que leyera su
+  OpenAPI, pero no pudo acceder porque no estábamos en la misma red de wifi.
+  Entonces le pasé el repositorio de ese compañero, para que leyera sus reglas
+  directamente desde el código.
+- Más adelante cambié de compañeros de grupo. Como iba a hacer el trabajo con
+  otras personas, decidí revertir los servicios que usaban parte de la lógica
+  del primer compañero, para no depender de su proyecto. Los clientes de la
+  entrega actual, hacia Ruth y Sebastián, se hicieron después (décima sesión).
+- La URL del servicio externo quedó en `application.properties` y no fija en
+  el código, como pedía el prompt.
+
+### Problemas que resolví
+
+- OpenCode no pudo abrir el Swagger del compañero (su servicio corría en otra
+  red de wifi y la URL local no era accesible). Lo resolví pasándole el
+  repositorio de ese compañero, así leyó el código y las reglas sin depender de
+  la red.
+
+## Décima sesión: Clientes HTTP hacia los servicios de los compañeros (POO-09)
+
+| Dato | Valor |
+|---|---|
+| **Marca / agente** | OpenCode (asistente de código en terminal) |
+| **Modelo LLM exacto** | `DeepSeek V4.1 Flash 1017` |
+| **Fecha** | 22 y 23 de noviembre de 2026 |
 
 ### Prompt usado
 
@@ -365,3 +416,71 @@ Requisitos: dos beans WebClient con la URL base y las rutas en `application.prop
 - `./mvnw` daba "Permiso denegado" y `sudo` tampoco lo ejecutaba: el archivo había perdido el bit de ejecución. Lo restauré con `chmod +x mvnw` y lo dejé registrado en Git con un commit.
 - En Windows, `git pull` falló porque la rama local no tenía rama remota asociada; lo resolví con `git branch --set-upstream-to=origin/feature/RESTClient feature/RESTClient`.
 - Los datos de prueba de los compañeros se agotan: un Creeper que explota queda consumido (409), así que tuve que crear datos nuevos en cada servicio antes de repetir una prueba.
+
+## Undécima sesión: Escenario creeper-electrificado con A2 y A3 (POO-09)
+
+| Dato | Valor |
+|---|---|
+| **Marca / agente** | OpenCode (asistente de código en terminal) |
+| **Modelo LLM exacto** | `DeepSeek V4.1 Flash 1017` |
+| **Fecha** | 23 de noviembre de 2026 |
+
+### Prompt usado
+
+Crear `POST /api/escenarios/creeper-electrificado` en mi servicio (A1). Hecho
+del juego: un Creeper electrificado por un rayo detona sobre un Zombie y un
+Jugador. El cuerpo lleva `descripcion`, `a2` (`creeperId` de Ruth) y `a3`
+(`creeperId`, `jugadorId`, `zombieId` y `radio` de Sebastián).
+
+Orden: primero A2 (Ruth) y después A3 (Sebastián). Las dos llamadas HTTP se
+hacen sin transacción abierta. Solo si ambos aceptan se guarda la jugada en una
+tabla nueva de mi H2 y se responde `201`. Si alguno rechaza, no se guarda nada y
+se responde `409` con `rechazadoPor` (A2 o A3); si no responde, `502`. `GET` en
+la misma ruta lista lo guardado. Las validaciones van en el service. Documentar
+con springdoc (`201`, `409` y `502`). Tests: feliz, rechazo de A2, rechazo de A3,
+caída de cada uno, y que el conteo de filas en H2 no cambie con un rechazo. No
+tocar `SimulacionController`, `SimulacionService`, `BITACORA.md` ni `README.md`.
+
+### Qué generó el agente
+
+- `EscenarioService` sin `@Transactional` de clase: llama a Ruth y luego a
+  Sebastián, y solo si ambos aceptan guarda en la tabla
+  `escenario_creeper_electrificado`.
+- La entidad `EscenarioCreeperElectrificado`, su repository, `EscenarioDTO`,
+  `EscenarioController` con anotaciones de springdoc y
+  `EscenarioInvalidoException`.
+- `EscenarioServiceTest` con los cinco casos pedidos. `./mvnw test` pasó con
+  **60 tests**, 0 fallos y 0 errores.
+- Además modificó dos tests que ya existían, `RuthClientTest` y
+  `SebastianClientTest`: subió el timeout de respuesta de 200 ms a 2 s y la
+  demora simulada de 1 s a 4 s.
+
+### Qué corregí o decidí yo
+
+- Decidí consultar primero a Ruth. Así, un rechazo de A2 no gasta datos de
+  Sebastián al probar. La limitación (si Ruth acepta y Sebastián rechaza, la base
+  de Ruth ya cambió) quedó escrita en el README.
+- Revisé el resultado antes del commit: el `git diff` de `SimulacionController`
+  y `SimulacionService` salió vacío, no hay `@Transactional` de clase en el
+  escenario, y en `EscenarioService` el `save` va después de las dos llamadas.
+- Revisé el cambio de OpenCode en los dos tests de clientes: los nuevos tiempos
+  mantienen válida la comprobación del timeout.
+- Probé el escenario con Insomnia con los tres servicios levantados: camino feliz
+  (`201`), rechazo de A2 (`409`, causado por el `422` de Ruth), rechazo de A3
+  (`409`, causado por el `409` de Sebastián) y un `GET` final con una sola fila,
+  para comprobar que los rechazos no guardaron nada en mi H2.
+- Exporté la colección de Insomnia en formato v5, con entorno, y guardé una
+  respuesta de ejemplo de cada caso en `docs/insomnia/respuestas/`.
+
+### Problemas que resolví
+
+- Cada explosión consume Creepers, y la de Ruth tiene reacción en cadena que
+  mata a otros mobs, incluido el Creeper sin carga que usaba para el rechazo.
+  Antes de cada prueba hay que crear mobs nuevos en Ruth y Sebastián y
+  actualizar los ids del entorno.
+- En Windows, `git pull` pedía borrar carpetas de `.git/objects` que OneDrive
+  bloqueaba. Lo resolví con `git config --global gc.auto 0` y con
+  `git merge --ff-only origin/feature/RESTClient` en lugar del `pull`.
+- Al guardar las respuestas de Insomnia se creó una carpeta con un nombre
+  equivocado (`docs/insomnia/insomnia`), que renombré a `respuestas` para poder
+  hacer el commit.
