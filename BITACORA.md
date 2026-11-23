@@ -324,3 +324,44 @@ Insomnia de la raíz.
   conservó una sola ubicación para evitar versiones divergentes.
 - La tabla de excepciones no contemplaba los conflictos de estado; se agregó
   `409 Conflict` con los casos de entidad muerta y Creeper ya explotado.
+
+## Novena sesión: Clientes HTTP hacia los servicios de los compañeros (POO-09)
+
+| Dato | Valor |
+|---|---|
+| **Marca / agente** | OpenCode (asistente de código en terminal) |
+| **Modelo LLM exacto** | `deepseek/deepseek-flash` |
+| **Fecha** | 23 de noviembre de 2026 |
+
+### Prompt usado
+
+Ya tengo WebClient (webflux), WebClientConfig y springdoc en el proyecto. No toques SimulacionController, SimulacionService ni el contrato de /api/simulaciones/explosion. No borres ObjetoExterno*.
+
+Crea clientes HTTP a mis dos compañeros, usando solo los contratos verificados con sus OpenAPI y con pruebas reales:
+
+- A2 (Ruth, `http://localhost:8081`): `POST /api/minecraft/simulaciones/explosion`, cuerpo `{"creeperId":N}`. Acepta con 2xx y rechaza con 404, 422 o 409.
+- A3 (Sebastián, `http://localhost:8082`): `POST /minecraft/sgomezdelafuente/simulaciones/explosion`, cuerpo `{"creeperId":N,"jugadorId":N,"zombieId":N,"radio":N}`. Acepta con 200 y rechaza con 404 o 409.
+
+Requisitos: dos beans WebClient con la URL base y las rutas en `application.properties` (con variable de entorno por defecto), timeouts de 3 s de conexión y 5 s de respuesta, un cliente por compañero con DTOs mínimos, `CompaneroRechazoException` (origen, status, tipo de error y mensaje) y `CompaneroNoDisponibleException` (origen), handlers en el `@RestControllerAdvice` (409 con `rechazadoPor` y 502 con el origen) y tests con el servidor simulado. No hacer todavía el escenario. Ejecutar `./mvnw test`.
+
+### Qué generó el agente
+
+- Creó `CompanerosWebClientConfig` con los beans `ruthWebClient` y `sebastianWebClient`, con la URL base por propiedades y los timeouts pedidos.
+- Creó `RuthClient` (A2) y `SebastianClient` (A3), con DTOs mínimos y la respuesta de éxito guardada como `JsonNode`.
+- Creó `CompaneroRechazoException` y `CompaneroNoDisponibleException`, ambas extendiendo `HostilDomainException`.
+- Agregó los handlers nuevos en `ManejadorExcepciones` (409 y 502 con los JSON pedidos) y las propiedades `companeros.a2.*` y `companeros.a3.*` en `application.properties`.
+- Escribió tests con un servidor HTTP simulado local, sin dependencias nuevas, para éxito, rechazos, timeout y servidor caído. `./mvnw test` pasó con **55 tests, 0 fallos y 0 errores**.
+
+### Qué corregí o decidí yo
+
+- Antes de pedir los clientes verifiqué a mano, con Insomnia, los contratos reales de los dos compañeros: levanté sus repos en la VM, creé Creepers, Zombie y Jugador en cada servicio y probé la explosión exitosa y cada rechazo (404, 409, 422). Así el prompt usa códigos y cuerpos observados y no supuestos del README. Los formatos de error son distintos (`tipo`/`mensaje` en Ruth; `status`/`error`/`mensaje` en Sebastián), por eso pedí que el cliente los leyera de forma tolerante.
+- Configuré el reenvío de puertos de VirtualBox para el 8081 y el 8082, además del 8080, para llamar a los tres servicios desde Insomnia en Windows.
+- Revisé el resultado antes de hacer commit: el `git diff` de `SimulacionController` y `SimulacionService` salió vacío, así que no cambió el contrato que usan mis compañeros. No quedan URLs fijas en el código y las rutas coinciden con las verificadas.
+- Decidí no borrar el prototipo `ObjetoExterno*` hasta el final, para no mezclar la limpieza con esta tarea.
+- Hice commit y push a `feature/RESTClient`, y luego traje los cambios a Windows con `git fetch` y `git pull`.
+
+### Problemas que resolví
+
+- `./mvnw` daba "Permiso denegado" y `sudo` tampoco lo ejecutaba: el archivo había perdido el bit de ejecución. Lo restauré con `chmod +x mvnw` y lo dejé registrado en Git con un commit.
+- En Windows, `git pull` falló porque la rama local no tenía rama remota asociada; lo resolví con `git branch --set-upstream-to=origin/feature/RESTClient feature/RESTClient`.
+- Los datos de prueba de los compañeros se agotan: un Creeper que explota queda consumido (409), así que tuve que crear datos nuevos en cada servicio antes de repetir una prueba.
